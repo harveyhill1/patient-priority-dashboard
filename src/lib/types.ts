@@ -1,3 +1,4 @@
+
 export type PriorityLevel = 'urgent' | 'amber' | 'success';
 export type FactorTag = 'age' | 'learning-disability' | 'care-home' | 'frailty' | 'severe-mental-illness';
 
