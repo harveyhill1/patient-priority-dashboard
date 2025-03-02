@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { PatientData, PriorityLevel } from '@/lib/types';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check, Send, Bell } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 interface PatientCardProps {
   patient: PatientData;
@@ -12,6 +13,11 @@ interface PatientCardProps {
 
 const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
   const [expanded, setExpanded] = useState(false);
+  const [alertSent, setAlertSent] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const [appointmentBooked, setAppointmentBooked] = useState(false);
+  const [patientResponded, setPatientResponded] = useState(false);
+  const { toast } = useToast();
 
   const getPriorityClass = (priority: PriorityLevel): string => {
     switch (priority) {
@@ -36,6 +42,126 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
     if (value > 6.0) return 'High';
     if (value > 5.0) return 'Elevated';
     return 'Normal';
+  };
+
+  const handleAlertPatient = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card expansion
+    setAlertSent(true);
+    
+    toast({
+      title: "Alert sent",
+      description: `Emergency alert sent to ${patient.name}`,
+      variant: "destructive",
+    });
+    
+    // Simulate patient responding after 3 seconds
+    setTimeout(() => {
+      setPatientResponded(true);
+      toast({
+        title: "Patient responded",
+        description: `${patient.name} has confirmed receipt with 'YES'`,
+        variant: "default",
+      });
+    }, 3000);
+  };
+
+  const handleConfirmAsRead = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card expansion
+    setConfirmed(true);
+    
+    toast({
+      title: "Marked as read",
+      description: `${patient.name}'s results confirmed as read`,
+      variant: "default",
+    });
+  };
+
+  const handlePredictAndBook = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card expansion
+    setAppointmentBooked(true);
+    
+    // Calculate next appointment date (1 month from now)
+    const nextAppointmentDate = new Date();
+    nextAppointmentDate.setMonth(nextAppointmentDate.getMonth() + 1);
+    const formattedDate = nextAppointmentDate.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+    
+    toast({
+      title: "Appointment scheduled",
+      description: `Suggested appointment for ${formattedDate} sent to ${patient.name}`,
+      variant: "default",
+    });
+    
+    // Simulate patient responding after 3 seconds
+    setTimeout(() => {
+      setPatientResponded(true);
+      toast({
+        title: "Appointment confirmed",
+        description: `${patient.name} confirmed appointment for ${formattedDate}`,
+        variant: "default",
+      });
+    }, 3000);
+  };
+
+  const renderActionButton = () => {
+    switch (patient.priority) {
+      case 'urgent':
+        return (
+          <button
+            className={cn(
+              "absolute top-2 right-2 p-1.5 rounded-md transition-all",
+              alertSent ? "bg-gray-200 text-gray-500" : "bg-urgent/20 text-urgent hover:bg-urgent/30"
+            )}
+            onClick={handleAlertPatient}
+            disabled={alertSent}
+            title="Alert patient"
+          >
+            {alertSent ? 
+              (patientResponded ? <Check className="h-4 w-4" /> : <Bell className="h-4 w-4" />) : 
+              <Send className="h-4 w-4" />
+            }
+            <span className="sr-only">Alert patient</span>
+          </button>
+        );
+      case 'amber':
+        return (
+          <button
+            className={cn(
+              "absolute top-2 right-2 p-1.5 rounded-md transition-all",
+              appointmentBooked ? "bg-gray-200 text-gray-500" : "bg-amber/20 text-amber hover:bg-amber/30"
+            )}
+            onClick={handlePredictAndBook}
+            disabled={appointmentBooked}
+            title="Predict and book"
+          >
+            {appointmentBooked ? 
+              (patientResponded ? <Check className="h-4 w-4" /> : <Bell className="h-4 w-4" />) : 
+              <Send className="h-4 w-4" />
+            }
+            <span className="sr-only">Predict and book</span>
+          </button>
+        );
+      case 'success':
+        return (
+          <button
+            className={cn(
+              "absolute top-2 right-2 p-1.5 rounded-md transition-all",
+              confirmed ? "bg-gray-200 text-gray-500" : "bg-success/20 text-success hover:bg-success/30"
+            )}
+            onClick={handleConfirmAsRead}
+            disabled={confirmed}
+            title="Confirm as read"
+          >
+            {confirmed ? <Check className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+            <span className="sr-only">Confirm as read</span>
+          </button>
+        );
+      default:
+        return null;
+    }
   };
 
   const renderValueIndicator = (
@@ -98,7 +224,9 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
       }}
       onClick={() => setExpanded(!expanded)}
     >
-      <div className="flex justify-between items-center mb-2">
+      {renderActionButton()}
+      
+      <div className="flex justify-between items-center mb-2 pr-8">
         <h3 className="text-base font-semibold">{patient.name}</h3>
         <div className="text-foreground/60">
           {expanded ? (
@@ -201,6 +329,63 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
               </LineChart>
             </ResponsiveContainer>
           </div>
+          
+          {patient.priority === 'urgent' && (
+            <div className="mt-4 p-3 bg-urgent/10 border border-urgent/20 rounded-md">
+              <h5 className="text-sm font-medium text-urgent mb-1">Emergency Action Required</h5>
+              <p className="text-xs text-foreground/80">
+                Patient needs immediate medical attention. Send an emergency alert to direct the patient to A&E.
+              </p>
+              {alertSent && (
+                <div className="mt-2 text-xs border-t border-urgent/20 pt-2">
+                  <div className="font-medium">Message sent:</div>
+                  <p className="italic mt-1">
+                    "Your blood test has come back. Your blood result is low. You need to go to A&E immediately. 
+                    Please respond YES to confirm you have received and understood."
+                  </p>
+                  {patientResponded && (
+                    <div className="mt-1 text-success font-medium">Patient responded: YES</div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          
+          {patient.priority === 'amber' && (
+            <div className="mt-4 p-3 bg-amber/10 border border-amber/20 rounded-md">
+              <h5 className="text-sm font-medium text-amber mb-1">Follow-up Required</h5>
+              <p className="text-xs text-foreground/80">
+                Based on trend analysis, patient's blood markers are expected to reach critical levels in 4-6 weeks.
+                Schedule a follow-up test.
+              </p>
+              {appointmentBooked && (
+                <div className="mt-2 text-xs border-t border-amber/20 pt-2">
+                  <div className="font-medium">Message sent:</div>
+                  <p className="italic mt-1">
+                    "Based on your recent blood test results, we recommend scheduling your next test. 
+                    Text YES if you can make your next blood test on 15th April 2025."
+                  </p>
+                  {patientResponded && (
+                    <div className="mt-1 text-success font-medium">Patient confirmed appointment</div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          
+          {patient.priority === 'success' && (
+            <div className="mt-4 p-3 bg-success/10 border border-success/20 rounded-md">
+              <h5 className="text-sm font-medium text-success mb-1">Results Normal</h5>
+              <p className="text-xs text-foreground/80">
+                All blood test results are within normal ranges. No immediate action required.
+              </p>
+              {confirmed && (
+                <div className="mt-2 text-xs border-t border-success/20 pt-2 text-success">
+                  <div className="font-medium">Results confirmed as read</div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
