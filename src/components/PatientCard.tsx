@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { PatientData, PriorityLevel, getFactorLabel } from '@/lib/types';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ChevronDown, ChevronUp, Check, Send, Bell, UserRound, Calendar, Hash } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check, Send, Bell, UserRound, Calendar, Hash, AlertTriangle, MessageSquare } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
 interface PatientCardProps {
@@ -17,6 +16,7 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
   const [confirmed, setConfirmed] = useState(false);
   const [appointmentBooked, setAppointmentBooked] = useState(false);
   const [patientResponded, setPatientResponded] = useState(false);
+  const [showMessagePreview, setShowMessagePreview] = useState(false);
   const { toast } = useToast();
 
   const getPriorityClass = (priority: PriorityLevel): string => {
@@ -45,7 +45,7 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
   };
 
   const handleAlertPatient = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card expansion
+    e.stopPropagation();
     setAlertSent(true);
     
     toast({
@@ -54,7 +54,6 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
       variant: "destructive",
     });
     
-    // Simulate patient responding after 3 seconds
     setTimeout(() => {
       setPatientResponded(true);
       toast({
@@ -66,7 +65,7 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
   };
 
   const handleConfirmAsRead = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card expansion
+    e.stopPropagation();
     setConfirmed(true);
     
     toast({
@@ -77,10 +76,9 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
   };
 
   const handlePredictAndBook = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card expansion
+    e.stopPropagation();
     setAppointmentBooked(true);
     
-    // Calculate next appointment date (1 month from now)
     const nextAppointmentDate = new Date();
     nextAppointmentDate.setMonth(nextAppointmentDate.getMonth() + 1);
     const formattedDate = nextAppointmentDate.toLocaleDateString('en-GB', {
@@ -95,7 +93,6 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
       variant: "default",
     });
     
-    // Simulate patient responding after 3 seconds
     setTimeout(() => {
       setPatientResponded(true);
       toast({
@@ -106,58 +103,139 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
     }, 3000);
   };
 
+  const toggleMessagePreview = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowMessagePreview(!showMessagePreview);
+  };
+
+  const getMessageContent = () => {
+    const hasVulnerabilityFactors = patient.factors.length > 0;
+    
+    if (patient.priority === 'urgent') {
+      return {
+        method: 'Phone Call',
+        message: "Your blood test has come back. Your blood result is low. You need to go to A&E immediately. Please confirm you have received and understood this message."
+      };
+    } else if (patient.priority === 'amber') {
+      if (hasVulnerabilityFactors) {
+        return {
+          method: 'Phone Call',
+          message: "Your recent blood test shows some abnormal results that require attention. We recommend you schedule an appointment with your GP within the next few days. Would you like us to arrange this for you?"
+        };
+      } else {
+        return {
+          method: 'SMS',
+          message: "Your recent blood test shows mild abnormalities. Please schedule a follow-up appointment in the next few weeks. Reply YES to confirm receipt of this message."
+        };
+      }
+    } else { // success priority
+      if (hasVulnerabilityFactors) {
+        return {
+          method: 'Phone Call',
+          message: "Your blood test results are normal. For optimal health, we recommend taking vitamin D supplements available from your local pharmacy. Would you like more information about this?"
+        };
+      } else {
+        return {
+          method: 'Information Leaflet',
+          message: "Your blood test results are normal. For optimal health, consider checking your ferritin and vitamin D levels which can be done at your local pharmacy. You can purchase supplements over the counter if needed."
+        };
+      }
+    }
+  };
+
+  const messageContent = getMessageContent();
+  
   const renderActionButton = () => {
     switch (patient.priority) {
       case 'urgent':
         return (
-          <button
-            className={cn(
-              "absolute top-2 right-2 p-1.5 rounded-md transition-all",
-              alertSent ? "bg-gray-200 text-gray-500" : "bg-urgent/20 text-urgent hover:bg-urgent/30"
-            )}
-            onClick={handleAlertPatient}
-            disabled={alertSent}
-            title="Alert patient"
-          >
-            {alertSent ? 
-              (patientResponded ? <Check className="h-4 w-4" /> : <Bell className="h-4 w-4" />) : 
-              <Send className="h-4 w-4" />
-            }
-            <span className="sr-only">Alert patient</span>
-          </button>
+          <div className="absolute top-2 right-2 flex gap-2">
+            <button
+              className={cn(
+                "p-1.5 rounded-md transition-all",
+                showMessagePreview ? "bg-slate-700 text-white" : "bg-slate-200 hover:bg-slate-300 text-slate-700"
+              )}
+              onClick={toggleMessagePreview}
+              title="Preview message"
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span className="sr-only">Preview message</span>
+            </button>
+            <button
+              className={cn(
+                "p-1.5 rounded-md transition-all",
+                alertSent ? "bg-gray-200 text-gray-500" : "bg-urgent/20 text-urgent hover:bg-urgent/30"
+              )}
+              onClick={handleAlertPatient}
+              disabled={alertSent}
+              title="Alert patient"
+            >
+              {alertSent ? 
+                (patientResponded ? <Check className="h-4 w-4" /> : <Bell className="h-4 w-4" />) : 
+                <Send className="h-4 w-4" />
+              }
+              <span className="sr-only">Alert patient</span>
+            </button>
+          </div>
         );
       case 'amber':
         return (
-          <button
-            className={cn(
-              "absolute top-2 right-2 p-1.5 rounded-md transition-all",
-              appointmentBooked ? "bg-gray-200 text-gray-500" : "bg-amber/20 text-amber hover:bg-amber/30"
-            )}
-            onClick={handlePredictAndBook}
-            disabled={appointmentBooked}
-            title="Predict and book"
-          >
-            {appointmentBooked ? 
-              (patientResponded ? <Check className="h-4 w-4" /> : <Bell className="h-4 w-4" />) : 
-              <Send className="h-4 w-4" />
-            }
-            <span className="sr-only">Predict and book</span>
-          </button>
+          <div className="absolute top-2 right-2 flex gap-2">
+            <button
+              className={cn(
+                "p-1.5 rounded-md transition-all",
+                showMessagePreview ? "bg-slate-700 text-white" : "bg-slate-200 hover:bg-slate-300 text-slate-700"
+              )}
+              onClick={toggleMessagePreview}
+              title="Preview message"
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span className="sr-only">Preview message</span>
+            </button>
+            <button
+              className={cn(
+                "p-1.5 rounded-md transition-all",
+                appointmentBooked ? "bg-gray-200 text-gray-500" : "bg-amber/20 text-amber hover:bg-amber/30"
+              )}
+              onClick={handlePredictAndBook}
+              disabled={appointmentBooked}
+              title="Predict and book"
+            >
+              {appointmentBooked ? 
+                (patientResponded ? <Check className="h-4 w-4" /> : <Bell className="h-4 w-4" />) : 
+                <Send className="h-4 w-4" />
+              }
+              <span className="sr-only">Predict and book</span>
+            </button>
+          </div>
         );
       case 'success':
         return (
-          <button
-            className={cn(
-              "absolute top-2 right-2 p-1.5 rounded-md transition-all",
-              confirmed ? "bg-gray-200 text-gray-500" : "bg-success/20 text-success hover:bg-success/30"
-            )}
-            onClick={handleConfirmAsRead}
-            disabled={confirmed}
-            title="Confirm as read"
-          >
-            {confirmed ? <Check className="h-4 w-4" /> : <Check className="h-4 w-4" />}
-            <span className="sr-only">Confirm as read</span>
-          </button>
+          <div className="absolute top-2 right-2 flex gap-2">
+            <button
+              className={cn(
+                "p-1.5 rounded-md transition-all",
+                showMessagePreview ? "bg-slate-700 text-white" : "bg-slate-200 hover:bg-slate-300 text-slate-700"
+              )}
+              onClick={toggleMessagePreview}
+              title="Preview message"
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span className="sr-only">Preview message</span>
+            </button>
+            <button
+              className={cn(
+                "p-1.5 rounded-md transition-all",
+                confirmed ? "bg-gray-200 text-gray-500" : "bg-success/20 text-success hover:bg-success/30"
+              )}
+              onClick={handleConfirmAsRead}
+              disabled={confirmed}
+              title="Confirm as read"
+            >
+              {confirmed ? <Check className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+              <span className="sr-only">Confirm as read</span>
+            </button>
+          </div>
         );
       default:
         return null;
@@ -225,6 +303,81 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
       onClick={() => setExpanded(!expanded)}
     >
       {renderActionButton()}
+      
+      {showMessagePreview && (
+        <div 
+          className="absolute right-2 top-12 z-10 w-72 bg-white shadow-lg rounded-md border border-gray-200 p-4 text-sm animate-in fade-in-0 zoom-in-95"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              {patient.priority === 'urgent' ? (
+                <AlertTriangle className="h-4 w-4 text-urgent" />
+              ) : patient.priority === 'amber' ? (
+                <Bell className="h-4 w-4 text-amber" />
+              ) : (
+                <MessageSquare className="h-4 w-4 text-success" />
+              )}
+              <h4 className="font-medium">Message Preview</h4>
+            </div>
+            <button 
+              className="text-gray-500 hover:text-gray-700"
+              onClick={toggleMessagePreview}
+            >
+              <span className="sr-only">Close</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          
+          <div className="mb-2">
+            <span className="text-xs font-medium text-gray-500">Delivery Method:</span>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-800">
+                {messageContent.method}
+              </span>
+              {patient.factors.length > 0 && (
+                <span className="text-xs text-amber-600">
+                  (Due to patient vulnerability factors)
+                </span>
+              )}
+            </div>
+          </div>
+          
+          <div>
+            <span className="text-xs font-medium text-gray-500">Message Content:</span>
+            <p className="mt-1 p-2 bg-gray-50 rounded border border-gray-100 text-xs">
+              {messageContent.message}
+            </p>
+          </div>
+          
+          <button 
+            className={cn(
+              "w-full mt-3 py-1.5 px-3 rounded-md text-xs font-medium",
+              patient.priority === 'urgent' 
+                ? "bg-urgent/90 hover:bg-urgent text-white" 
+                : patient.priority === 'amber'
+                ? "bg-amber/90 hover:bg-amber text-white"
+                : "bg-success/90 hover:bg-success text-white"
+            )}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (patient.priority === 'urgent') {
+                handleAlertPatient(e);
+              } else if (patient.priority === 'amber') {
+                handlePredictAndBook(e);
+              } else {
+                handleConfirmAsRead(e);
+              }
+              setShowMessagePreview(false);
+            }}
+          >
+            Send Now
+          </button>
+        </div>
+      )}
       
       <div className="flex justify-between items-start mb-3 pr-8">
         <div>
