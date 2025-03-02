@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { PatientData, PriorityLevel } from '@/lib/types';
+import { PatientData, PriorityLevel, getFactorLabel } from '@/lib/types';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ChevronDown, ChevronUp, Check, Send, Bell } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check, Send, Bell, UserRound, Calendar, Hash } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
 interface PatientCardProps {
@@ -203,7 +202,6 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
     );
   };
 
-  // Mock historical data - in a real app, this would come from an API
   const mockHistoricalData = [
     { date: '6 months ago', hemoglobin: Math.max(patient.hemoglobin - 1.5, 5), potassium: Math.max(patient.potassium - 0.5, 3.5) },
     { date: '3 months ago', hemoglobin: Math.max(patient.hemoglobin - 0.8, 5.5), potassium: Math.max(patient.potassium - 0.3, 3.8) },
@@ -217,7 +215,8 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
         "patient-card animate-fade-in-up cursor-pointer",
         getPriorityClass(patient.priority),
         expanded && "expanded-card",
-        className
+        className,
+        "relative"
       )}
       style={{
         animationDelay: `${Math.random() * 0.3}s`
@@ -226,8 +225,20 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
     >
       {renderActionButton()}
       
-      <div className="flex justify-between items-center mb-2 pr-8">
-        <h3 className="text-base font-semibold">{patient.name}</h3>
+      <div className="flex justify-between items-start mb-3 pr-8">
+        <div>
+          <h3 className="text-base font-semibold">{patient.name}</h3>
+          <div className="flex flex-col gap-1 mt-1 text-xs text-foreground/70">
+            <div className="flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              <span>DOB: {patient.dateOfBirth}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Hash className="h-3 w-3" />
+              <span>ID: {patient.patientId}</span>
+            </div>
+          </div>
+        </div>
         <div className="text-foreground/60">
           {expanded ? (
             <ChevronUp className="h-4 w-4" />
@@ -257,6 +268,19 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
           </div>
         </div>
       </div>
+
+      {patient.factors.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1">
+          {patient.factors.map((factor) => (
+            <span 
+              key={factor}
+              className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
+            >
+              {getFactorLabel(factor)}
+            </span>
+          ))}
+        </div>
+      )}
 
       {expanded && (
         <div className="mt-4 pt-4 border-t border-foreground/10 animate-fade-in">

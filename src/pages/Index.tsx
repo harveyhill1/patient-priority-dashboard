@@ -2,30 +2,166 @@
 import React, { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import PriorityColumn from '@/components/PriorityColumn';
-import { PatientData, PriorityLevel } from '@/lib/types';
+import { PatientData, PriorityLevel, FactorTag } from '@/lib/types';
 import { Filter, CircleSlash, AlertCircle, CheckCircle, SlidersHorizontal } from 'lucide-react';
 
+// Random names for more realistic data
 const MOCK_PATIENT_DATA: PatientData[] = [
   // Urgent patients
-  { id: "1", name: "Patient 1", hemoglobin: 5.9, potassium: 6.2, priority: "urgent" },
-  { id: "2", name: "Patient 2", hemoglobin: 7.1, potassium: 6.0, priority: "urgent" },
-  { id: "3", name: "Patient 3", hemoglobin: 6.8, potassium: 6.3, priority: "urgent" },
-  { id: "4", name: "Patient 4", hemoglobin: 5.5, potassium: 6.1, priority: "urgent" },
-  { id: "5", name: "Patient 5", hemoglobin: 4.9, potassium: 6.5, priority: "urgent" },
+  { 
+    id: "1", 
+    name: "Sarah Johnson", 
+    patientId: "PTN-73621",
+    dateOfBirth: "12/05/1948", 
+    hemoglobin: 5.9, 
+    potassium: 6.2, 
+    priority: "urgent",
+    factors: ["age", "frailty"] 
+  },
+  { 
+    id: "2", 
+    name: "Michael Chen", 
+    patientId: "PTN-45982",
+    dateOfBirth: "23/11/1985", 
+    hemoglobin: 7.1, 
+    potassium: 6.0, 
+    priority: "urgent",
+    factors: ["severe-mental-illness"] 
+  },
+  { 
+    id: "3", 
+    name: "Emma Davis", 
+    patientId: "PTN-29374",
+    dateOfBirth: "04/08/1992", 
+    hemoglobin: 6.8, 
+    potassium: 6.3, 
+    priority: "urgent",
+    factors: ["learning-disability"] 
+  },
+  { 
+    id: "4", 
+    name: "Robert Williams", 
+    patientId: "PTN-61845",
+    dateOfBirth: "15/03/1975", 
+    hemoglobin: 5.5, 
+    potassium: 6.1, 
+    priority: "urgent",
+    factors: [] 
+  },
+  { 
+    id: "5", 
+    name: "Margaret Taylor", 
+    patientId: "PTN-38246",
+    dateOfBirth: "30/01/1942", 
+    hemoglobin: 4.9, 
+    potassium: 6.5, 
+    priority: "urgent",
+    factors: ["age", "care-home"] 
+  },
   
   // Amber patients
-  { id: "6", name: "Patient 6", hemoglobin: 9.5, potassium: 5.4, priority: "amber" },
-  { id: "7", name: "Patient 7", hemoglobin: 10.2, potassium: 5.1, priority: "amber" },
-  { id: "8", name: "Patient 8", hemoglobin: 8.9, potassium: 5.5, priority: "amber" },
-  { id: "9", name: "Patient 9", hemoglobin: 10.6, potassium: 5.3, priority: "amber" },
-  { id: "10", name: "Patient 10", hemoglobin: 9.9, potassium: 5.6, priority: "amber" },
+  { 
+    id: "6", 
+    name: "David Brown", 
+    patientId: "PTN-58291",
+    dateOfBirth: "19/07/1964", 
+    hemoglobin: 9.5, 
+    potassium: 5.4, 
+    priority: "amber",
+    factors: [] 
+  },
+  { 
+    id: "7", 
+    name: "Jennifer Lee", 
+    patientId: "PTN-13579",
+    dateOfBirth: "02/12/1980", 
+    hemoglobin: 10.2, 
+    potassium: 5.1, 
+    priority: "amber",
+    factors: ["severe-mental-illness"] 
+  },
+  { 
+    id: "8", 
+    name: "Thomas Wilson", 
+    patientId: "PTN-24680",
+    dateOfBirth: "27/09/1990", 
+    hemoglobin: 8.9, 
+    potassium: 5.5, 
+    priority: "amber",
+    factors: ["learning-disability"] 
+  },
+  { 
+    id: "9", 
+    name: "Elizabeth Martinez", 
+    patientId: "PTN-97531",
+    dateOfBirth: "08/06/1971", 
+    hemoglobin: 10.6, 
+    potassium: 5.3, 
+    priority: "amber",
+    factors: [] 
+  },
+  { 
+    id: "10", 
+    name: "Richard Thompson", 
+    patientId: "PTN-86420",
+    dateOfBirth: "14/04/1939", 
+    hemoglobin: 9.9, 
+    potassium: 5.6, 
+    priority: "amber",
+    factors: ["age", "frailty"] 
+  },
   
   // Green patients
-  { id: "11", name: "Patient 11", hemoglobin: 13.5, potassium: 4.2, priority: "success" },
-  { id: "12", name: "Patient 12", hemoglobin: 14.1, potassium: 4.0, priority: "success" },
-  { id: "13", name: "Patient 13", hemoglobin: 12.6, potassium: 3.9, priority: "success" },
-  { id: "14", name: "Patient 14", hemoglobin: 13.2, potassium: 4.4, priority: "success" },
-  { id: "15", name: "Patient 15", hemoglobin: 15.0, potassium: 4.1, priority: "success" },
+  { 
+    id: "11", 
+    name: "Susan Moore", 
+    patientId: "PTN-75319",
+    dateOfBirth: "21/10/1988", 
+    hemoglobin: 13.5, 
+    potassium: 4.2, 
+    priority: "success",
+    factors: [] 
+  },
+  { 
+    id: "12", 
+    name: "James Anderson", 
+    patientId: "PTN-42687",
+    dateOfBirth: "17/02/1976", 
+    hemoglobin: 14.1, 
+    potassium: 4.0, 
+    priority: "success",
+    factors: [] 
+  },
+  { 
+    id: "13", 
+    name: "Patricia Garcia", 
+    patientId: "PTN-91374",
+    dateOfBirth: "05/05/1982", 
+    hemoglobin: 12.6, 
+    potassium: 3.9, 
+    priority: "success",
+    factors: [] 
+  },
+  { 
+    id: "14", 
+    name: "John Smith", 
+    patientId: "PTN-57138",
+    dateOfBirth: "29/08/1945", 
+    hemoglobin: 13.2, 
+    potassium: 4.4, 
+    priority: "success",
+    factors: ["age", "care-home"] 
+  },
+  { 
+    id: "15", 
+    name: "Mary Johnson", 
+    patientId: "PTN-28465",
+    dateOfBirth: "11/11/1994", 
+    hemoglobin: 15.0, 
+    potassium: 4.1, 
+    priority: "success",
+    factors: ["learning-disability"] 
+  },
 ];
 
 const Index = () => {
