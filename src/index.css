@@ -72,23 +72,28 @@
   }
   
   .patient-card {
-    @apply p-4 rounded-lg border border-border transition-all duration-300 ease-in-out hover:shadow-md;
+    @apply p-4 rounded-lg border border-border transition-all duration-300 ease-in-out hover:shadow-md relative overflow-hidden;
   }
   
   .patient-card-urgent {
-    @apply border-urgent/20 bg-urgent-muted hover:border-urgent/30;
+    @apply border-urgent/30 bg-urgent-muted hover:border-urgent/50;
   }
   
   .patient-card-amber {
-    @apply border-amber/20 bg-amber-muted hover:border-amber/30;
+    @apply border-amber/30 bg-amber-muted hover:border-amber/50;
   }
   
   .patient-card-success {
-    @apply border-success/20 bg-success-muted hover:border-success/30;
+    @apply border-success/30 bg-success-muted hover:border-success/50;
   }
   
   .card-gradient {
     background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.2));
+  }
+
+  .expanded-card {
+    @apply shadow-md;
+    transition: all 0.3s ease;
   }
 }
 
@@ -100,4 +105,13 @@
 
 .animate-subtle-pulse {
   animation: subtle-pulse 3s ease-in-out infinite;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
 }
