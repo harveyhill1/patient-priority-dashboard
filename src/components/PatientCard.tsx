@@ -1,0 +1,112 @@
+
+import React from 'react';
+import { cn } from '@/lib/utils';
+import { PatientData, PriorityLevel } from '@/lib/types';
+
+interface PatientCardProps {
+  patient: PatientData;
+  className?: string;
+}
+
+const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
+  const getPriorityClass = (priority: PriorityLevel): string => {
+    switch (priority) {
+      case 'urgent':
+        return 'patient-card-urgent';
+      case 'amber':
+        return 'patient-card-amber';
+      case 'success':
+        return 'patient-card-success';
+      default:
+        return 'patient-card-success';
+    }
+  };
+
+  const getHemoglobinLabel = (value: number): string => {
+    if (value < 8) return 'Very Low';
+    if (value < 11) return 'Low';
+    return 'Normal';
+  };
+
+  const getPotassiumLabel = (value: number): string => {
+    if (value > 6.0) return 'High';
+    if (value > 5.0) return 'Elevated';
+    return 'Normal';
+  };
+
+  const renderValueIndicator = (
+    value: number, 
+    reference: 'hemoglobin' | 'potassium'
+  ) => {
+    let bgColor = 'bg-success/20';
+    let textColor = 'text-success';
+    
+    if (reference === 'hemoglobin') {
+      if (value < 8) {
+        bgColor = 'bg-urgent/20';
+        textColor = 'text-urgent';
+      } else if (value < 11) {
+        bgColor = 'bg-amber/20';
+        textColor = 'text-amber';
+      }
+    } else {
+      if (value > 6.0) {
+        bgColor = 'bg-urgent/20';
+        textColor = 'text-urgent';
+      } else if (value > 5.0) {
+        bgColor = 'bg-amber/20';
+        textColor = 'text-amber';
+      }
+    }
+    
+    return (
+      <span className={cn(
+        "text-xs font-medium px-1.5 py-0.5 rounded-full ml-2",
+        bgColor,
+        textColor
+      )}>
+        {reference === 'hemoglobin' 
+          ? getHemoglobinLabel(value) 
+          : getPotassiumLabel(value)
+        }
+      </span>
+    );
+  };
+
+  return (
+    <div 
+      className={cn(
+        "patient-card animate-fade-in-up",
+        getPriorityClass(patient.priority),
+        className
+      )}
+      style={{
+        animationDelay: `${Math.random() * 0.3}s`
+      }}
+    >
+      <h3 className="text-base font-semibold mb-2">{patient.name}</h3>
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <span className="text-sm text-foreground/80">Hb:</span>
+            <span className="text-sm font-medium ml-1.5">
+              {patient.hemoglobin} g/dL
+            </span>
+            {renderValueIndicator(patient.hemoglobin, 'hemoglobin')}
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <span className="text-sm text-foreground/80">K+:</span>
+            <span className="text-sm font-medium ml-1.5">
+              {patient.potassium} mmol/L
+            </span>
+            {renderValueIndicator(patient.potassium, 'potassium')}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PatientCard;
