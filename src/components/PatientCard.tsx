@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { PatientData, PriorityLevel, getFactorLabel } from '@/lib/types';
@@ -290,80 +289,155 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
   ];
 
   return (
-    <div className="relative">
-      <div 
-        className={cn(
-          "patient-card animate-fade-in-up cursor-pointer",
-          getPriorityClass(patient.priority),
-          expanded && "expanded-card",
-          className
-        )}
-        style={{
-          animationDelay: `${Math.random() * 0.3}s`
-        }}
-        onClick={() => setExpanded(!expanded)}
-      >
-        {renderActionButton()}
-        
-        <div className="flex justify-between items-start mb-3 pr-8">
+    <div 
+      className={cn(
+        "patient-card animate-fade-in-up cursor-pointer",
+        getPriorityClass(patient.priority),
+        expanded && "expanded-card",
+        className,
+        "relative"
+      )}
+      style={{
+        animationDelay: `${Math.random() * 0.3}s`
+      }}
+      onClick={() => setExpanded(!expanded)}
+    >
+      {renderActionButton()}
+      
+      {showMessagePreview && (
+        <div 
+          className="absolute right-2 top-12 z-10 w-72 bg-white shadow-lg rounded-md border border-gray-200 p-4 text-sm animate-in fade-in-0 zoom-in-95"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              {patient.priority === 'urgent' ? (
+                <AlertTriangle className="h-4 w-4 text-urgent" />
+              ) : patient.priority === 'amber' ? (
+                <Bell className="h-4 w-4 text-amber" />
+              ) : (
+                <MessageSquare className="h-4 w-4 text-success" />
+              )}
+              <h4 className="font-medium">Message Preview</h4>
+            </div>
+            <button 
+              className="text-gray-500 hover:text-gray-700"
+              onClick={toggleMessagePreview}
+            >
+              <span className="sr-only">Close</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          
+          <div className="mb-2">
+            <span className="text-xs font-medium text-gray-500">Delivery Method:</span>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-800">
+                {messageContent.method}
+              </span>
+              {patient.factors.length > 0 && (
+                <span className="text-xs text-amber-600">
+                  (Due to patient vulnerability factors)
+                </span>
+              )}
+            </div>
+          </div>
+          
           <div>
-            <h3 className="text-base font-semibold">{patient.name}</h3>
-            <div className="flex flex-col gap-1 mt-1 text-xs text-foreground/70">
-              <div className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                <span>DOB: {patient.dateOfBirth}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Hash className="h-3 w-3" />
-                <span>ID: {patient.patientId}</span>
-              </div>
-            </div>
+            <span className="text-xs font-medium text-gray-500">Message Content:</span>
+            <p className="mt-1 p-2 bg-gray-50 rounded border border-gray-100 text-xs">
+              {messageContent.message}
+            </p>
           </div>
-          <div className="text-foreground/60">
-            {expanded ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
+          
+          <button 
+            className={cn(
+              "w-full mt-3 py-1.5 px-3 rounded-md text-xs font-medium",
+              patient.priority === 'urgent' 
+                ? "bg-urgent/90 hover:bg-urgent text-white" 
+                : patient.priority === 'amber'
+                ? "bg-amber/90 hover:bg-amber text-white"
+                : "bg-success/90 hover:bg-success text-white"
             )}
-          </div>
+            onClick={(e) => {
+              e.stopPropagation();
+              if (patient.priority === 'urgent') {
+                handleAlertPatient(e);
+              } else if (patient.priority === 'amber') {
+                handlePredictAndBook(e);
+              } else {
+                handleConfirmAsRead(e);
+              }
+              setShowMessagePreview(false);
+            }}
+          >
+            Send Now
+          </button>
         </div>
-        
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <span className="text-sm text-foreground/80">Hb:</span>
-              <span className="text-sm font-medium ml-1.5">
-                {patient.hemoglobin} g/dL
-              </span>
-              {renderValueIndicator(patient.hemoglobin, 'hemoglobin')}
+      )}
+      
+      <div className="flex justify-between items-start mb-3 pr-8">
+        <div>
+          <h3 className="text-base font-semibold">{patient.name}</h3>
+          <div className="flex flex-col gap-1 mt-1 text-xs text-foreground/70">
+            <div className="flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              <span>DOB: {patient.dateOfBirth}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Hash className="h-3 w-3" />
+              <span>ID: {patient.patientId}</span>
             </div>
           </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <span className="text-sm text-foreground/80">K+:</span>
-              <span className="text-sm font-medium ml-1.5">
-                {patient.potassium} mmol/L
-              </span>
-              {renderValueIndicator(patient.potassium, 'potassium')}
-            </div>
+        </div>
+        <div className="text-foreground/60">
+          {expanded ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </div>
+      </div>
+      
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <span className="text-sm text-foreground/80">Hb:</span>
+            <span className="text-sm font-medium ml-1.5">
+              {patient.hemoglobin} g/dL
+            </span>
+            {renderValueIndicator(patient.hemoglobin, 'hemoglobin')}
           </div>
         </div>
-
-        {patient.factors.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1">
-            {patient.factors.map((factor) => (
-              <span 
-                key={factor}
-                className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
-              >
-                {getFactorLabel(factor)}
-              </span>
-            ))}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <span className="text-sm text-foreground/80">K+:</span>
+            <span className="text-sm font-medium ml-1.5">
+              {patient.potassium} mmol/L
+            </span>
+            {renderValueIndicator(patient.potassium, 'potassium')}
           </div>
-        )}
+        </div>
+      </div>
 
-        {expanded && (
-          <div className="mt-4 pt-4 border-t border-foreground/10 animate-fade-in">
+      {patient.factors.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1">
+          {patient.factors.map((factor) => (
+            <span 
+              key={factor}
+              className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
+            >
+              {getFactorLabel(factor)}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {expanded && (
+        <div className="mt-4 pt-4 border-t border-foreground/10 animate-fade-in">
           <h4 className="text-sm font-medium mb-3">Blood Test History</h4>
           
           <div className="h-64 w-full">
@@ -490,87 +564,6 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
               )}
             </div>
           )}
-        </div>
-        )}
-      </div>
-      
-      {showMessagePreview && (
-        <div 
-          className="fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-80 bg-white shadow-lg rounded-md border border-gray-200 p-4 text-sm animate-in fade-in-0 zoom-in-95 md:absolute md:left-full md:top-0 md:transform-none md:ml-4"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              {patient.priority === 'urgent' ? (
-                <AlertTriangle className="h-4 w-4 text-urgent" />
-              ) : patient.priority === 'amber' ? (
-                <Bell className="h-4 w-4 text-amber" />
-              ) : (
-                <MessageSquare className="h-4 w-4 text-success" />
-              )}
-              <h4 className="font-medium">Communication Details</h4>
-            </div>
-            <button 
-              className="text-gray-500 hover:text-gray-700"
-              onClick={toggleMessagePreview}
-            >
-              <span className="sr-only">Close</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-          
-          <div className="mb-3 pb-2 border-b border-gray-100">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Delivery Method:</span>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className={cn(
-                "inline-flex items-center px-2 py-1 rounded text-xs font-medium",
-                messageContent.method === "Phone Call" 
-                  ? "bg-blue-100 text-blue-800" 
-                  : "bg-green-100 text-green-800"
-              )}>
-                {messageContent.method}
-              </span>
-              {patient.factors.length > 0 && (
-                <span className="text-xs text-amber-600">
-                  (Due to vulnerability)
-                </span>
-              )}
-            </div>
-          </div>
-          
-          <div>
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Message Content:</span>
-            <div className="mt-1 p-3 bg-gray-50 rounded border border-gray-100 text-xs leading-relaxed">
-              {messageContent.message}
-            </div>
-          </div>
-          
-          <button 
-            className={cn(
-              "w-full mt-4 py-2 px-3 rounded-md text-xs font-medium text-white",
-              patient.priority === 'urgent' 
-                ? "bg-urgent hover:bg-urgent/90" 
-                : patient.priority === 'amber'
-                ? "bg-amber hover:bg-amber/90"
-                : "bg-success hover:bg-success/90"
-            )}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (patient.priority === 'urgent') {
-                handleAlertPatient(e);
-              } else if (patient.priority === 'amber') {
-                handlePredictAndBook(e);
-              } else {
-                handleConfirmAsRead(e);
-              }
-              setShowMessagePreview(false);
-            }}
-          >
-            Send Communication Now
-          </button>
         </div>
       )}
     </div>
