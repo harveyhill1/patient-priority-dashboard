@@ -1,6 +1,15 @@
-
 export type PriorityLevel = 'urgent' | 'amber' | 'success';
 export type FactorTag = 'age' | 'learning-disability' | 'care-home' | 'frailty' | 'severe-mental-illness';
+
+// SNOMED codes for severe mental illness
+export const severeMentalIllnessSnomedCodes = {
+  'schizophrenia': '58214004',
+  'bipolar-disorder': '13746004',
+  'major-depression': '370143000',
+  'schizoaffective-disorder': '68890003',
+  'delusional-disorder': '48500005',
+  'psychotic-disorder': '69322001'
+};
 
 export interface PatientData {
   id: string;
@@ -11,6 +20,9 @@ export interface PatientData {
   potassium: number; // K+ value
   priority: PriorityLevel;
   factors: FactorTag[];
+  snomedCodes?: {
+    [key: string]: string;
+  };
 }
 
 export const getColorByPriority = (priority: PriorityLevel): string => {
@@ -54,4 +66,8 @@ export const getFactorLabel = (factor: FactorTag): string => {
     default:
       return 'Unknown';
   }
+};
+
+export const getSnomedCodeForMentalIllness = (condition: keyof typeof severeMentalIllnessSnomedCodes): string => {
+  return severeMentalIllnessSnomedCodes[condition] || '';
 };

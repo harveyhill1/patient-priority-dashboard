@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { PatientData, PriorityLevel, getFactorLabel } from '@/lib/types';
+import { PatientData, PriorityLevel, getFactorLabel, severeMentalIllnessSnomedCodes } from '@/lib/types';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ChevronDown, ChevronUp, Check, Send, Bell, UserRound, Calendar, Hash, AlertTriangle, MessageSquare, PhoneCall } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
@@ -368,6 +367,11 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
                       className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-800"
                     >
                       {getFactorLabel(factor)}
+                      {factor === 'severe-mental-illness' && (
+                        <span className="ml-1 text-xs text-gray-500">
+                          SNOMED: {Object.values(severeMentalIllnessSnomedCodes)[0]}
+                        </span>
+                      )}
                     </span>
                   ))}
                 </div>
@@ -468,6 +472,11 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
               className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
             >
               {getFactorLabel(factor)}
+              {factor === 'severe-mental-illness' && (
+                <span className="ml-1 text-xs text-gray-500">
+                  [SNOMED: {Object.values(severeMentalIllnessSnomedCodes)[0]}]
+                </span>
+              )}
             </span>
           ))}
         </div>
@@ -544,6 +553,20 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
               </LineChart>
             </ResponsiveContainer>
           </div>
+          
+          {patient.factors.includes('severe-mental-illness') && (
+            <div className="mt-4 p-3 bg-slate-100 border border-slate-200 rounded-md">
+              <h5 className="text-sm font-medium text-slate-800 mb-1">SNOMED Codes - Severe Mental Illness</h5>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {Object.entries(severeMentalIllnessSnomedCodes).map(([condition, code]) => (
+                  <div key={condition} className="flex justify-between">
+                    <span className="capitalize">{condition.replace('-', ' ')}</span>
+                    <span className="font-mono">{code}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           
           {patient.priority === 'urgent' && (
             <div className="mt-4 p-3 bg-urgent/10 border border-urgent/20 rounded-md">
