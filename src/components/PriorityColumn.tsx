@@ -43,12 +43,18 @@ const PriorityColumn: React.FC<PriorityColumnProps> = ({
         </div>
       </div>
       <div className="flex-1 p-4 space-y-4 overflow-y-auto max-h-[70vh]">
-        {patients.map((patient) => (
-          <PatientCard 
-            key={patient.id} 
-            patient={patient}
-          />
-        ))}
+        {patients.length > 0 ? (
+          patients.map((patient) => (
+            <PatientCard 
+              key={patient.id} 
+              patient={patient}
+            />
+          ))
+        ) : (
+          <div className="py-8 text-center text-muted-foreground">
+            <p>No patients in this category</p>
+          </div>
+        )}
       </div>
     </div>
   );
