@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { PatientData, PriorityLevel, getFactorLabel } from '@/lib/types';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ChevronDown, ChevronUp, Check, Send, Bell, UserRound, Calendar, Hash, AlertTriangle, MessageSquare } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check, Send, Bell, UserRound, Calendar, Hash, AlertTriangle, MessageSquare, PhoneCall } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
 interface PatientCardProps {
@@ -114,17 +115,20 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
     if (patient.priority === 'urgent') {
       return {
         method: 'Phone Call',
+        icon: <PhoneCall className="h-4 w-4 mr-1" />,
         message: "Your blood test has come back. Your blood result is low. You need to go to A&E immediately. Please confirm you have received and understood this message."
       };
     } else if (patient.priority === 'amber') {
       if (hasVulnerabilityFactors) {
         return {
           method: 'Phone Call',
+          icon: <PhoneCall className="h-4 w-4 mr-1" />,
           message: "Your recent blood test shows some abnormal results that require attention. We recommend you schedule an appointment with your GP within the next few days. Would you like us to arrange this for you?"
         };
       } else {
         return {
           method: 'SMS',
+          icon: <MessageSquare className="h-4 w-4 mr-1" />,
           message: "Your recent blood test shows mild abnormalities. Please schedule a follow-up appointment in the next few weeks. Reply YES to confirm receipt of this message."
         };
       }
@@ -132,11 +136,13 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
       if (hasVulnerabilityFactors) {
         return {
           method: 'Phone Call',
+          icon: <PhoneCall className="h-4 w-4 mr-1" />,
           message: "Your blood test results are normal. For optimal health, we recommend taking vitamin D supplements available from your local pharmacy. Would you like more information about this?"
         };
       } else {
         return {
           method: 'Information Leaflet',
+          icon: <MessageSquare className="h-4 w-4 mr-1" />,
           message: "Your blood test results are normal. For optimal health, consider checking your ferritin and vitamin D levels which can be done at your local pharmacy. You can purchase supplements over the counter if needed."
         };
       }
@@ -306,76 +312,107 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
       
       {showMessagePreview && (
         <div 
-          className="absolute right-2 top-12 z-10 w-72 bg-white shadow-lg rounded-md border border-gray-200 p-4 text-sm animate-in fade-in-0 zoom-in-95"
-          onClick={(e) => e.stopPropagation()}
+          className="fixed inset-0 w-full h-full z-50 flex items-center justify-center"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowMessagePreview(false);
+          }}
         >
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              {patient.priority === 'urgent' ? (
-                <AlertTriangle className="h-4 w-4 text-urgent" />
-              ) : patient.priority === 'amber' ? (
-                <Bell className="h-4 w-4 text-amber" />
-              ) : (
-                <MessageSquare className="h-4 w-4 text-success" />
-              )}
-              <h4 className="font-medium">Message Preview</h4>
+          <div className="absolute inset-0 bg-black/20" aria-hidden="true"></div>
+          <div 
+            className="relative bg-white shadow-lg rounded-lg border border-gray-200 p-6 w-full max-w-md m-4 text-sm animate-in fade-in-0 zoom-in-95"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                {patient.priority === 'urgent' ? (
+                  <AlertTriangle className="h-5 w-5 text-urgent" />
+                ) : patient.priority === 'amber' ? (
+                  <Bell className="h-5 w-5 text-amber" />
+                ) : (
+                  <MessageSquare className="h-5 w-5 text-success" />
+                )}
+                <h3 className="text-lg font-semibold">Communication Preview</h3>
+              </div>
+              <button 
+                className="text-gray-500 hover:text-gray-700"
+                onClick={() => setShowMessagePreview(false)}
+              >
+                <span className="sr-only">Close</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
             </div>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-500 mb-1">Patient: <span className="font-medium text-gray-900">{patient.name}</span></p>
+              <p className="text-sm text-gray-500">ID: <span className="font-medium text-gray-900">{patient.patientId}</span></p>
+            </div>
+            
+            <div className="mb-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Delivery Method</h4>
+              <div className="flex items-center gap-2 mb-1">
+                {messageContent.icon}
+                <span className="inline-flex items-center px-2.5 py-1 rounded text-sm font-medium bg-slate-100 text-slate-800">
+                  {messageContent.method}
+                </span>
+              </div>
+              {patient.factors.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  <p className="text-xs text-amber-600 mb-1">Due to patient vulnerability factors:</p>
+                  {patient.factors.map((factor) => (
+                    <span 
+                      key={factor}
+                      className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-800"
+                    >
+                      {getFactorLabel(factor)}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="mb-6">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Message Content</h4>
+              <div className={cn(
+                "p-4 rounded border text-sm",
+                patient.priority === 'urgent' ? "bg-urgent/5 border-urgent/20" : 
+                patient.priority === 'amber' ? "bg-amber/5 border-amber/20" : 
+                "bg-success/5 border-success/20"
+              )}>
+                <p>{messageContent.message}</p>
+              </div>
+            </div>
+            
             <button 
-              className="text-gray-500 hover:text-gray-700"
-              onClick={toggleMessagePreview}
+              className={cn(
+                "w-full py-2.5 px-4 rounded-md text-sm font-medium text-white",
+                patient.priority === 'urgent' 
+                  ? "bg-urgent hover:bg-urgent/90" 
+                  : patient.priority === 'amber'
+                  ? "bg-amber hover:bg-amber/90"
+                  : "bg-success hover:bg-success/90"
+              )}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (patient.priority === 'urgent') {
+                  handleAlertPatient(e);
+                } else if (patient.priority === 'amber') {
+                  handlePredictAndBook(e);
+                } else {
+                  handleConfirmAsRead(e);
+                }
+                setShowMessagePreview(false);
+              }}
             >
-              <span className="sr-only">Close</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
+              <div className="flex items-center justify-center gap-2">
+                <Send className="h-4 w-4" />
+                <span>Send Communication Now</span>
+              </div>
             </button>
           </div>
-          
-          <div className="mb-2">
-            <span className="text-xs font-medium text-gray-500">Delivery Method:</span>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-800">
-                {messageContent.method}
-              </span>
-              {patient.factors.length > 0 && (
-                <span className="text-xs text-amber-600">
-                  (Due to patient vulnerability factors)
-                </span>
-              )}
-            </div>
-          </div>
-          
-          <div>
-            <span className="text-xs font-medium text-gray-500">Message Content:</span>
-            <p className="mt-1 p-2 bg-gray-50 rounded border border-gray-100 text-xs">
-              {messageContent.message}
-            </p>
-          </div>
-          
-          <button 
-            className={cn(
-              "w-full mt-3 py-1.5 px-3 rounded-md text-xs font-medium",
-              patient.priority === 'urgent' 
-                ? "bg-urgent/90 hover:bg-urgent text-white" 
-                : patient.priority === 'amber'
-                ? "bg-amber/90 hover:bg-amber text-white"
-                : "bg-success/90 hover:bg-success text-white"
-            )}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (patient.priority === 'urgent') {
-                handleAlertPatient(e);
-              } else if (patient.priority === 'amber') {
-                handlePredictAndBook(e);
-              } else {
-                handleConfirmAsRead(e);
-              }
-              setShowMessagePreview(false);
-            }}
-          >
-            Send Now
-          </button>
         </div>
       )}
       
