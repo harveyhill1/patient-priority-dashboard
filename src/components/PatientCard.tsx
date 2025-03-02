@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { PatientData, PriorityLevel, getFactorLabel } from '@/lib/types';
@@ -495,9 +496,8 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
       
       {showMessagePreview && (
         <div 
-          className="absolute left-full ml-4 top-0 z-10 w-72 bg-white shadow-lg rounded-md border border-gray-200 p-4 text-sm animate-in fade-in-0 zoom-in-95"
+          className="fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-80 bg-white shadow-lg rounded-md border border-gray-200 p-4 text-sm animate-in fade-in-0 zoom-in-95 md:absolute md:left-full md:top-0 md:transform-none md:ml-4"
           onClick={(e) => e.stopPropagation()}
-          style={{ maxWidth: "calc(100vw - 100px)" }}
         >
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
