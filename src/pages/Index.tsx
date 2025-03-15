@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import PriorityColumn from '@/components/PriorityColumn';
@@ -213,6 +214,14 @@ const Index = () => {
     });
   };
 
+  // Calculate column width based on number of visible columns
+  const getColumnClass = () => {
+    const count = priorityFilters.length;
+    if (count === 1) return "col-span-1";
+    if (count === 2) return "col-span-1";
+    return "col-span-1";
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-r from-red-400 via-fuchsia-500 to-purple-500 flex flex-col">
       <Header />
@@ -314,21 +323,21 @@ const Index = () => {
                 <PriorityColumn 
                   priority="urgent" 
                   patients={urgentPatients} 
-                  className={priorityFilters.length < 3 ? "md:col-span-3" : ""}
+                  className={getColumnClass()}
                 />
               )}
               {priorityFilters.includes('amber') && (
                 <PriorityColumn 
                   priority="amber" 
                   patients={amberPatients} 
-                  className={priorityFilters.length < 3 ? "md:col-span-3" : ""}
+                  className={getColumnClass()}
                 />
               )}
               {priorityFilters.includes('success') && (
                 <PriorityColumn 
                   priority="success" 
                   patients={successPatients} 
-                  className={priorityFilters.length < 3 ? "md:col-span-3" : ""}
+                  className={getColumnClass()}
                 />
               )}
               
@@ -344,7 +353,7 @@ const Index = () => {
       
       <footer className="py-4 text-center text-sm text-white/70">
         <div className="container">
-          SmartLabsi &copy; {new Date().getFullYear()}
+          SmartLabs &copy; {new Date().getFullYear()}
         </div>
       </footer>
     </div>
