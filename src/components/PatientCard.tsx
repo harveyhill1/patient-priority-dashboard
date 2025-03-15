@@ -44,6 +44,36 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
     return 'Normal';
   };
 
+  const getAIClinicalSummary = (patient: PatientData): string => {
+    if (patient.priority === 'urgent') {
+      if (patient.factors.includes('age') && patient.factors.includes('frailty')) {
+        return "Last admission (03/2024): Fall resulting in hip fracture. Recent clinic letter notes declining mobility and increased frailty. Currently on 5 medications including blood pressure medication which may contribute to current results.";
+      } else if (patient.factors.includes('severe-mental-illness')) {
+        return "Last admission (01/2024): Acute psychotic episode requiring stabilization. Clinic letter indicates poor medication compliance. Periodic monitoring of blood levels recommended due to lithium therapy.";
+      } else if (patient.factors.includes('learning-disability')) {
+        return "No recent admissions. Clinic letter from LD team (02/2024) notes difficulties with medication adherence. Caregiver reports reduced oral intake over past 2 weeks.";
+      } else {
+        return "Last admission (11/2023): GI bleed requiring 2 units transfusion. Clinic follow-up showed improvement but incomplete recovery. Recent reports of fatigue and shortness of breath.";
+      }
+    } else if (patient.priority === 'amber') {
+      if (patient.factors.includes('severe-mental-illness')) {
+        return "Last psychiatry review (01/2024): Stable on current medication regimen. Blood work monitoring due to antipsychotic therapy. Weight gain and metabolic concerns noted at last visit.";
+      } else if (patient.factors.includes('learning-disability')) {
+        return "Annual health check (02/2024): Generally stable. Support worker reports good compliance with vitamin supplements. Previous issues with iron deficiency noted, but improved with supplements.";
+      } else if (patient.factors.includes('age') || patient.factors.includes('frailty')) {
+        return "Geriatric assessment (12/2023): Mild cognitive impairment, living independently with support. Previous history of falls. Recent changes to medication regimen to address hypertension.";
+      } else {
+        return "Routine check-up (01/2024): Previously healthy with no significant medical history. Recent reports of increased fatigue. Blood tests ordered to investigate anemia suggested by pale conjunctiva.";
+      }
+    } else {
+      if (patient.factors.length > 0) {
+        return "Recent clinic appointment (02/2024): All chronic conditions well-managed. No reported concerns. Current medication regimen appears effective with good compliance reported.";
+      } else {
+        return "Routine physical (03/2024): Generally healthy with no significant medical history. Recent lifestyle changes include improved diet and exercise routine. No reported concerns.";
+      }
+    }
+  };
+
   const handleAlertPatient = (e: React.MouseEvent) => {
     e.stopPropagation();
     setAlertSent(true);
@@ -484,6 +514,20 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
 
       {expanded && (
         <div className="mt-4 pt-4 border-t border-foreground/10 animate-fade-in">
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-md">
+            <h4 className="text-sm font-medium text-blue-800 mb-1 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              AI Clinical Summary
+            </h4>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              {getAIClinicalSummary(patient)}
+            </p>
+          </div>
+          
           <h4 className="text-sm font-medium mb-3">Blood Test History</h4>
           
           <div className="h-64 w-full">
