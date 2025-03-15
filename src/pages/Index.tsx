@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import PriorityColumn from '@/components/PriorityColumn';
@@ -220,6 +221,38 @@ const Index = () => {
     return "col-span-1"; // Three columns each take one-third width
   };
 
+  // Calculate specific column widths for urgent priority
+  const getUrgentColumnWidth = () => {
+    // If urgent is the only column shown, make it take up the full width
+    if (priorityFilters.length === 1 && priorityFilters.includes('urgent')) {
+      return "col-span-3"; 
+    } 
+    // If two columns are shown and one is urgent, give it appropriate width
+    else if (priorityFilters.length === 2 && priorityFilters.includes('urgent')) {
+      return "col-span-3 md:col-span-[1.5]";
+    }
+    // Default case with all three columns
+    return "col-span-1";
+  };
+
+  // Calculate column widths for non-urgent priorities
+  const getNonUrgentColumnWidth = () => {
+    // If urgent is not shown but this column is one of two, give it half width
+    if (!priorityFilters.includes('urgent') && priorityFilters.length === 2) {
+      return "col-span-3 md:col-span-[1.5]";
+    }
+    // If urgent is shown and it's one of two columns, give appropriate width
+    else if (priorityFilters.includes('urgent') && priorityFilters.length === 2) {
+      return "col-span-3 md:col-span-[1.5]";
+    }
+    // If only one column is shown and it's not urgent
+    else if (priorityFilters.length === 1) {
+      return "col-span-3";
+    }
+    // Default case with all three columns
+    return "col-span-1";
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-r from-red-400 via-fuchsia-500 to-purple-500 flex flex-col">
       <Header />
@@ -321,27 +354,21 @@ const Index = () => {
                 <PriorityColumn 
                   priority="urgent" 
                   patients={urgentPatients} 
-                  className={priorityFilters.length === 1 ? "col-span-3" : 
-                             priorityFilters.length === 2 ? "col-span-3 md:col-span-[1.5]" : 
-                             "col-span-1"}
+                  className={getUrgentColumnWidth()}
                 />
               )}
               {priorityFilters.includes('amber') && (
                 <PriorityColumn 
                   priority="amber" 
                   patients={amberPatients} 
-                  className={priorityFilters.length === 1 ? "col-span-3" : 
-                             priorityFilters.length === 2 ? "col-span-3 md:col-span-[1.5]" : 
-                             "col-span-1"}
+                  className={getNonUrgentColumnWidth()}
                 />
               )}
               {priorityFilters.includes('success') && (
                 <PriorityColumn 
                   priority="success" 
                   patients={successPatients} 
-                  className={priorityFilters.length === 1 ? "col-span-3" : 
-                             priorityFilters.length === 2 ? "col-span-3 md:col-span-[1.5]" : 
-                             "col-span-1"}
+                  className={getNonUrgentColumnWidth()}
                 />
               )}
               
