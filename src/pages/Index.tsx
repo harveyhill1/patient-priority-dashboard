@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import PriorityColumn from '@/components/PriorityColumn';
@@ -215,10 +214,9 @@ const Index = () => {
   };
 
   // Calculate column width based on number of visible columns
-  const getColumnClass = () => {
-    const count = priorityFilters.length;
-    if (count === 1) return "col-span-3"; // One column takes full width
-    if (count === 2) return "col-span-3 md:col-span-3/2"; // Two columns each take half width
+  const getColumnWidth = (total: number) => {
+    if (total === 1) return "col-span-3"; // One column takes full width
+    if (total === 2) return "col-span-3 md:col-span-[1.5]"; // Two columns each take half width
     return "col-span-1"; // Three columns each take one-third width
   };
 
@@ -324,7 +322,7 @@ const Index = () => {
                   priority="urgent" 
                   patients={urgentPatients} 
                   className={priorityFilters.length === 1 ? "col-span-3" : 
-                             priorityFilters.length === 2 ? "col-span-3 md:col-span-1.5" : 
+                             priorityFilters.length === 2 ? "col-span-3 md:col-span-[1.5]" : 
                              "col-span-1"}
                 />
               )}
@@ -333,7 +331,7 @@ const Index = () => {
                   priority="amber" 
                   patients={amberPatients} 
                   className={priorityFilters.length === 1 ? "col-span-3" : 
-                             priorityFilters.length === 2 ? "col-span-3 md:col-span-1.5" : 
+                             priorityFilters.length === 2 ? "col-span-3 md:col-span-[1.5]" : 
                              "col-span-1"}
                 />
               )}
@@ -342,7 +340,7 @@ const Index = () => {
                   priority="success" 
                   patients={successPatients} 
                   className={priorityFilters.length === 1 ? "col-span-3" : 
-                             priorityFilters.length === 2 ? "col-span-3 md:col-span-1.5" : 
+                             priorityFilters.length === 2 ? "col-span-3 md:col-span-[1.5]" : 
                              "col-span-1"}
                 />
               )}
