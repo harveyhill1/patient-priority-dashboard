@@ -3,31 +3,20 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
-  doctorName: string;
+  doctorName?: string;
   className?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ doctorName, className }) => {
+const Header: React.FC<HeaderProps> = ({ doctorName = "Dr. User", className }) => {
   return (
     <header className={cn(
-      "w-full bg-white border-b border-border sticky top-0 z-50 shadow-sm",
-      "animate-fade-in",
+      "w-full bg-gradient-to-r from-red-400 via-fuchsia-500 to-purple-500 py-5",
       className
     )}>
-      <div className="container flex items-center justify-between h-16 px-4 md:px-6">
-        <div className="flex-1">
-          <h1 className="text-xl font-medium tracking-tight">GP Dashboard</h1>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground mr-2">
-              <span className="text-sm font-medium">
-                {doctorName.split(' ').map(name => name[0]).join('')}
-              </span>
-            </div>
-            <span className="font-medium">{doctorName}</span>
-          </div>
-        </div>
+      <div className="container mx-auto px-4 flex justify-center items-center">
+        <h1 className="text-5xl font-bold text-white tracking-tight">
+          Smart<span className="text-black">Labs</span><span className="italic font-bold">i</span>
+        </h1>
       </div>
     </header>
   );

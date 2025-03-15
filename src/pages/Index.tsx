@@ -1,9 +1,8 @@
-
 import React, { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import PriorityColumn from '@/components/PriorityColumn';
 import { PatientData, PriorityLevel, FactorTag } from '@/lib/types';
-import { Filter, CircleSlash, AlertCircle, CheckCircle, SlidersHorizontal } from 'lucide-react';
+import { Filter, SlidersHorizontal } from 'lucide-react';
 
 // Random names for more realistic data
 const MOCK_PATIENT_DATA: PatientData[] = [
@@ -226,78 +225,75 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header doctorName="Dr. Smith" />
+    <div className="min-h-screen bg-gradient-to-r from-red-400 via-fuchsia-500 to-purple-500 flex flex-col">
+      <Header />
       
-      <main className="flex-1 container mx-auto py-6 px-4 md:px-6 md:py-8">
+      <main className="flex-1 container mx-auto pt-6 pb-10 px-4 md:px-6 md:pt-8">
         {loading ? (
           <div className="h-[60vh] flex items-center justify-center">
             <div className="text-center space-y-4">
-              <div className="w-12 h-12 rounded-full border-4 border-primary/30 border-t-primary animate-spin mx-auto"></div>
-              <p className="text-muted-foreground">Loading patient data...</p>
+              <div className="w-12 h-12 rounded-full border-4 border-white/30 border-t-white animate-spin mx-auto"></div>
+              <p className="text-white">Loading patient data...</p>
             </div>
           </div>
         ) : (
           <>
             {/* Filters section */}
-            <div className="mb-6 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center animate-fade-in">
+            <div className="mb-6 flex flex-col md:flex-row gap-4 justify-center items-start md:items-center animate-fade-in">
               {/* Priority filters */}
-              <div className="flex items-center gap-3 bg-white p-3 rounded-lg shadow-sm border border-border">
-                <div className="flex items-center gap-1 mr-2">
-                  <Filter className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-3 bg-white p-3 rounded-full shadow-md">
+                <div className="flex items-center gap-1 mx-2">
+                  <Filter className="h-4 w-4 text-gray-500" />
                   <span className="text-sm font-medium">Priority:</span>
                 </div>
                 
                 <button 
                   onClick={() => togglePriorityFilter('urgent')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                     priorityFilters.includes('urgent') 
-                      ? 'bg-urgent/20 text-urgent' 
-                      : 'bg-muted text-muted-foreground'
+                      ? 'bg-red-200 text-red-700' 
+                      : 'bg-gray-100 text-gray-500'
                   }`}
                 >
-                  <CircleSlash className="h-4 w-4" />
-                  <span>Critical</span>
+                  Critical
                 </button>
                 
                 <button 
                   onClick={() => togglePriorityFilter('amber')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                     priorityFilters.includes('amber') 
-                      ? 'bg-amber/20 text-amber' 
-                      : 'bg-muted text-muted-foreground'
+                      ? 'bg-amber-200 text-amber-700' 
+                      : 'bg-gray-100 text-gray-500'
                   }`}
                 >
-                  <AlertCircle className="h-4 w-4" />
-                  <span>Abnormal</span>
+                  Abnormal
                 </button>
                 
                 <button 
                   onClick={() => togglePriorityFilter('success')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                     priorityFilters.includes('success') 
-                      ? 'bg-success/20 text-success' 
-                      : 'bg-muted text-muted-foreground'
+                      ? 'bg-green-200 text-green-700' 
+                      : 'bg-gray-100 text-gray-500'
                   }`}
                 >
-                  <CheckCircle className="h-4 w-4" />
-                  <span>Normal</span>
+                  Normal
                 </button>
               </div>
               
               {/* Blood test type filter */}
-              <div className="flex items-center gap-3 bg-white p-3 rounded-lg shadow-sm border border-border">
-                <div className="flex items-center gap-1 mr-2">
-                  <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-3 bg-white p-3 rounded-full shadow-md">
+                <div className="flex items-center gap-1 mx-2">
+                  <SlidersHorizontal className="h-4 w-4 text-gray-500" />
                   <span className="text-sm font-medium">Test Type:</span>
                 </div>
                 
                 <button 
                   onClick={() => setBloodTestFilter('all')}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                     bloodTestFilter === 'all' 
-                      ? 'bg-primary/10 text-primary' 
-                      : 'bg-muted text-muted-foreground'
+                      ? 'bg-blue-100 text-blue-700' 
+                      : 'bg-gray-100 text-gray-500'
                   }`}
                 >
                   All
@@ -305,10 +301,10 @@ const Index = () => {
                 
                 <button 
                   onClick={() => setBloodTestFilter('hemoglobin')}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                     bloodTestFilter === 'hemoglobin' 
-                      ? 'bg-primary/10 text-primary' 
-                      : 'bg-muted text-muted-foreground'
+                      ? 'bg-blue-100 text-blue-700' 
+                      : 'bg-gray-100 text-gray-500'
                   }`}
                 >
                   Hemoglobin (Hb)
@@ -316,10 +312,10 @@ const Index = () => {
                 
                 <button 
                   onClick={() => setBloodTestFilter('potassium')}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                     bloodTestFilter === 'potassium' 
-                      ? 'bg-primary/10 text-primary' 
-                      : 'bg-muted text-muted-foreground'
+                      ? 'bg-blue-100 text-blue-700' 
+                      : 'bg-gray-100 text-gray-500'
                   }`}
                 >
                   Potassium (K+)
@@ -352,8 +348,8 @@ const Index = () => {
               )}
               
               {filteredPatients.length === 0 && (
-                <div className="col-span-3 text-center py-12">
-                  <p className="text-muted-foreground">No patients match the selected filters</p>
+                <div className="col-span-3 text-center py-12 bg-white/80 rounded-lg">
+                  <p className="text-gray-600">No patients match the selected filters</p>
                 </div>
               )}
             </div>
@@ -361,9 +357,9 @@ const Index = () => {
         )}
       </main>
       
-      <footer className="border-t py-4 text-center text-sm text-muted-foreground">
+      <footer className="py-4 text-center text-sm text-white/70">
         <div className="container">
-          GP Dashboard &copy; {new Date().getFullYear()}
+          SmartLabsi &copy; {new Date().getFullYear()}
         </div>
       </footer>
     </div>

@@ -15,13 +15,50 @@ const PriorityColumn: React.FC<PriorityColumnProps> = ({
   patients,
   className
 }) => {
-  const priorityColor = getColorByPriority(priority);
-  const priorityLabel = getLabelByPriority(priority);
+  const getBackgroundColor = () => {
+    switch (priority) {
+      case 'urgent':
+        return 'bg-red-100';
+      case 'amber':
+        return 'bg-amber-50';
+      case 'success':
+        return 'bg-green-50';
+      default:
+        return 'bg-white';
+    }
+  };
+  
+  const getTitleColor = () => {
+    switch (priority) {
+      case 'urgent':
+        return 'text-red-700';
+      case 'amber':
+        return 'text-amber-700';
+      case 'success':
+        return 'text-green-700';
+      default:
+        return 'text-gray-700';
+    }
+  };
+
+  const getBadgeColor = () => {
+    switch (priority) {
+      case 'urgent':
+        return 'bg-red-200 text-red-700';
+      case 'amber':
+        return 'bg-amber-200 text-amber-700';
+      case 'success':
+        return 'bg-green-200 text-green-700';
+      default:
+        return 'bg-gray-200 text-gray-700';
+    }
+  };
   
   return (
     <div 
       className={cn(
-        "flex flex-col w-full bg-white rounded-xl shadow-sm border border-border overflow-hidden",
+        "flex flex-col w-full rounded-3xl shadow-md overflow-hidden",
+        getBackgroundColor(),
         "transition-all duration-500 ease-in-out",
         "animate-fade-in",
         className
@@ -30,14 +67,13 @@ const PriorityColumn: React.FC<PriorityColumnProps> = ({
         animationDelay: `${priority === 'urgent' ? 0 : priority === 'amber' ? 0.1 : 0.2}s`
       }}
     >
-      <div className={cn(
-        "px-4 py-3 flex items-center justify-between border-b",
-        `bg-${priorityColor}/10 text-${priorityColor}`
-      )}>
-        <h2 className="text-lg font-semibold">{priorityLabel}</h2>
+      <div className="px-6 py-4 flex items-center justify-between">
+        <h2 className={cn("text-xl font-semibold", getTitleColor())}>
+          {priority === 'urgent' ? 'Urgent' : priority === 'amber' ? 'Amber' : 'Green'}
+        </h2>
         <div className={cn(
-          "px-2 py-1 rounded-full text-xs font-medium",
-          `bg-${priorityColor}/20 text-${priorityColor}`
+          "px-2.5 py-1 rounded-full text-xs font-medium",
+          getBadgeColor()
         )}>
           {patients.length} patients
         </div>
@@ -51,7 +87,7 @@ const PriorityColumn: React.FC<PriorityColumnProps> = ({
             />
           ))
         ) : (
-          <div className="py-8 text-center text-muted-foreground">
+          <div className="py-8 text-center text-gray-500">
             <p>No patients in this category</p>
           </div>
         )}

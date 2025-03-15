@@ -1,3 +1,4 @@
+
 export type PriorityLevel = 'urgent' | 'amber' | 'success';
 export type FactorTag = 'age' | 'learning-disability' | 'care-home' | 'frailty' | 'severe-mental-illness';
 
@@ -28,13 +29,13 @@ export interface PatientData {
 export const getColorByPriority = (priority: PriorityLevel): string => {
   switch (priority) {
     case 'urgent':
-      return 'urgent';
+      return 'red';
     case 'amber':
       return 'amber';
     case 'success':
-      return 'success';
+      return 'green';
     default:
-      return 'success';
+      return 'green';
   }
 };
 

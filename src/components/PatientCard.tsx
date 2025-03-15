@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { PatientData, PriorityLevel, getFactorLabel, severeMentalIllnessSnomedCodes } from '@/lib/types';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ChevronDown, ChevronUp, Check, Send, Bell, UserRound, Calendar, Hash, AlertTriangle, MessageSquare, PhoneCall } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check, Send, Bell, Calendar, Hash, AlertTriangle, MessageSquare, PhoneCall } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
 interface PatientCardProps {
@@ -19,16 +19,16 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
   const [showMessagePreview, setShowMessagePreview] = useState(false);
   const { toast } = useToast();
 
-  const getPriorityClass = (priority: PriorityLevel): string => {
+  const getBackgroundColor = (priority: PriorityLevel): string => {
     switch (priority) {
       case 'urgent':
-        return 'patient-card-urgent';
+        return 'bg-white border-red-200';
       case 'amber':
-        return 'patient-card-amber';
+        return 'bg-white border-amber-200';
       case 'success':
-        return 'patient-card-success';
+        return 'bg-white border-green-200';
       default:
-        return 'patient-card-success';
+        return 'bg-white border-gray-200';
     }
   };
 
@@ -38,10 +38,22 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
     return 'Normal';
   };
 
+  const getHemoglobinLabelColor = (value: number): string => {
+    if (value < 8) return 'bg-red-100 text-red-700';
+    if (value < 11) return 'bg-amber-100 text-amber-700';
+    return 'bg-green-100 text-green-700';
+  };
+
   const getPotassiumLabel = (value: number): string => {
     if (value > 6.0) return 'High';
     if (value > 5.0) return 'Elevated';
     return 'Normal';
+  };
+
+  const getPotassiumLabelColor = (value: number): string => {
+    if (value > 6.0) return 'bg-red-100 text-red-700';
+    if (value > 5.0) return 'bg-amber-100 text-amber-700';
+    return 'bg-green-100 text-green-700';
   };
 
   const getAIClinicalSummary = (patient: PatientData): string => {
@@ -184,136 +196,88 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
     switch (patient.priority) {
       case 'urgent':
         return (
-          <div className="absolute top-2 right-2 flex gap-2">
+          <div className="flex gap-1">
             <button
-              className={cn(
-                "p-1.5 rounded-md transition-all",
-                showMessagePreview ? "bg-slate-700 text-white" : "bg-slate-200 hover:bg-slate-300 text-slate-700"
-              )}
-              onClick={toggleMessagePreview}
-              title="Preview message"
+              className="p-1.5 rounded-md bg-blue-100 text-blue-700"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleMessagePreview(e);
+              }}
             >
               <MessageSquare className="h-4 w-4" />
-              <span className="sr-only">Preview message</span>
             </button>
             <button
               className={cn(
-                "p-1.5 rounded-md transition-all",
-                alertSent ? "bg-gray-200 text-gray-500" : "bg-urgent/20 text-urgent hover:bg-urgent/30"
+                "p-1.5 rounded-md",
+                alertSent ? "bg-gray-100 text-gray-400" : "bg-red-100 text-red-700"
               )}
-              onClick={handleAlertPatient}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!alertSent) handleAlertPatient(e);
+              }}
               disabled={alertSent}
-              title="Alert patient"
             >
-              {alertSent ? 
-                (patientResponded ? <Check className="h-4 w-4" /> : <Bell className="h-4 w-4" />) : 
-                <Send className="h-4 w-4" />
-              }
-              <span className="sr-only">Alert patient</span>
+              <Send className="h-4 w-4" />
             </button>
           </div>
         );
       case 'amber':
         return (
-          <div className="absolute top-2 right-2 flex gap-2">
+          <div className="flex gap-1">
             <button
-              className={cn(
-                "p-1.5 rounded-md transition-all",
-                showMessagePreview ? "bg-slate-700 text-white" : "bg-slate-200 hover:bg-slate-300 text-slate-700"
-              )}
-              onClick={toggleMessagePreview}
-              title="Preview message"
+              className="p-1.5 rounded-md bg-blue-100 text-blue-700"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleMessagePreview(e);
+              }}
             >
               <MessageSquare className="h-4 w-4" />
-              <span className="sr-only">Preview message</span>
             </button>
             <button
               className={cn(
-                "p-1.5 rounded-md transition-all",
-                appointmentBooked ? "bg-gray-200 text-gray-500" : "bg-amber/20 text-amber hover:bg-amber/30"
+                "p-1.5 rounded-md",
+                appointmentBooked ? "bg-gray-100 text-gray-400" : "bg-amber-100 text-amber-700"
               )}
-              onClick={handlePredictAndBook}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!appointmentBooked) handlePredictAndBook(e);
+              }}
               disabled={appointmentBooked}
-              title="Predict and book"
             >
-              {appointmentBooked ? 
-                (patientResponded ? <Check className="h-4 w-4" /> : <Bell className="h-4 w-4" />) : 
-                <Send className="h-4 w-4" />
-              }
-              <span className="sr-only">Predict and book</span>
+              <Send className="h-4 w-4" />
             </button>
           </div>
         );
       case 'success':
         return (
-          <div className="absolute top-2 right-2 flex gap-2">
+          <div className="flex gap-1">
             <button
-              className={cn(
-                "p-1.5 rounded-md transition-all",
-                showMessagePreview ? "bg-slate-700 text-white" : "bg-slate-200 hover:bg-slate-300 text-slate-700"
-              )}
-              onClick={toggleMessagePreview}
-              title="Preview message"
+              className="p-1.5 rounded-md bg-blue-100 text-blue-700"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleMessagePreview(e);
+              }}
             >
               <MessageSquare className="h-4 w-4" />
-              <span className="sr-only">Preview message</span>
             </button>
             <button
               className={cn(
-                "p-1.5 rounded-md transition-all",
-                confirmed ? "bg-gray-200 text-gray-500" : "bg-success/20 text-success hover:bg-success/30"
+                "p-1.5 rounded-md",
+                confirmed ? "bg-gray-100 text-gray-400" : "bg-green-100 text-green-700"
               )}
-              onClick={handleConfirmAsRead}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!confirmed) handleConfirmAsRead(e);
+              }}
               disabled={confirmed}
-              title="Confirm as read"
             >
-              {confirmed ? <Check className="h-4 w-4" /> : <Check className="h-4 w-4" />}
-              <span className="sr-only">Confirm as read</span>
+              <Check className="h-4 w-4" />
             </button>
           </div>
         );
       default:
         return null;
     }
-  };
-
-  const renderValueIndicator = (
-    value: number, 
-    reference: 'hemoglobin' | 'potassium'
-  ) => {
-    let bgColor = 'bg-success/20';
-    let textColor = 'text-success';
-    
-    if (reference === 'hemoglobin') {
-      if (value < 8) {
-        bgColor = 'bg-urgent/20';
-        textColor = 'text-urgent';
-      } else if (value < 11) {
-        bgColor = 'bg-amber/20';
-        textColor = 'text-amber';
-      }
-    } else {
-      if (value > 6.0) {
-        bgColor = 'bg-urgent/20';
-        textColor = 'text-urgent';
-      } else if (value > 5.0) {
-        bgColor = 'bg-amber/20';
-        textColor = 'text-amber';
-      }
-    }
-    
-    return (
-      <span className={cn(
-        "text-xs font-medium px-1.5 py-0.5 rounded-full ml-2",
-        bgColor,
-        textColor
-      )}>
-        {reference === 'hemoglobin' 
-          ? getHemoglobinLabel(value) 
-          : getPotassiumLabel(value)
-        }
-      </span>
-    );
   };
 
   const mockHistoricalData = [
@@ -326,19 +290,14 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
   return (
     <div 
       className={cn(
-        "patient-card animate-fade-in-up cursor-pointer",
-        getPriorityClass(patient.priority),
-        expanded && "expanded-card",
-        className,
-        "relative"
+        "rounded-xl p-4 shadow-sm cursor-pointer transition-all",
+        getBackgroundColor(patient.priority),
+        expanded && "shadow-md",
+        className
       )}
-      style={{
-        animationDelay: `${Math.random() * 0.3}s`
-      }}
       onClick={() => setExpanded(!expanded)}
     >
-      {renderActionButton()}
-      
+      {/* Message Preview Modal */}
       {showMessagePreview && (
         <div 
           className="fixed inset-0 w-full h-full z-50 flex items-center justify-center"
@@ -355,11 +314,11 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 {patient.priority === 'urgent' ? (
-                  <AlertTriangle className="h-5 w-5 text-urgent" />
+                  <AlertTriangle className="h-5 w-5 text-red-700" />
                 ) : patient.priority === 'amber' ? (
-                  <Bell className="h-5 w-5 text-amber" />
+                  <Bell className="h-5 w-5 text-amber-700" />
                 ) : (
-                  <MessageSquare className="h-5 w-5 text-success" />
+                  <MessageSquare className="h-5 w-5 text-green-700" />
                 )}
                 <h3 className="text-lg font-semibold">Communication Preview</h3>
               </div>
@@ -412,9 +371,9 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
               <h4 className="text-sm font-medium text-gray-700 mb-2">Message Content</h4>
               <div className={cn(
                 "p-4 rounded border text-sm",
-                patient.priority === 'urgent' ? "bg-urgent/5 border-urgent/20" : 
-                patient.priority === 'amber' ? "bg-amber/5 border-amber/20" : 
-                "bg-success/5 border-success/20"
+                patient.priority === 'urgent' ? "bg-red-50 border-red-200" : 
+                patient.priority === 'amber' ? "bg-amber-50 border-amber-200" : 
+                "bg-green-50 border-green-200"
               )}>
                 <p>{messageContent.message}</p>
               </div>
@@ -424,10 +383,10 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
               className={cn(
                 "w-full py-2.5 px-4 rounded-md text-sm font-medium text-white",
                 patient.priority === 'urgent' 
-                  ? "bg-urgent hover:bg-urgent/90" 
+                  ? "bg-red-700 hover:bg-red-800" 
                   : patient.priority === 'amber'
-                  ? "bg-amber hover:bg-amber/90"
-                  : "bg-success hover:bg-success/90"
+                  ? "bg-amber-700 hover:bg-amber-800"
+                  : "bg-green-700 hover:bg-green-800"
               )}
               onClick={(e) => {
                 e.stopPropagation();
@@ -450,10 +409,10 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
         </div>
       )}
       
-      <div className="flex justify-between items-start mb-3 pr-8">
+      <div className="flex justify-between items-start">
         <div>
-          <h3 className="text-base font-semibold">{patient.name}</h3>
-          <div className="flex flex-col gap-1 mt-1 text-xs text-foreground/70">
+          <h3 className="text-base font-semibold text-gray-800">{patient.name}</h3>
+          <div className="flex flex-col gap-1 mt-1 text-xs text-gray-500">
             <div className="flex items-center gap-1">
               <Calendar className="h-3 w-3" />
               <span>DOB: {patient.dateOfBirth}</span>
@@ -464,56 +423,74 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
             </div>
           </div>
         </div>
-        <div className="text-foreground/60">
-          {expanded ? (
-            <ChevronUp className="h-4 w-4" />
-          ) : (
-            <ChevronDown className="h-4 w-4" />
-          )}
+        <div className="flex">
+          {renderActionButton()}
         </div>
       </div>
       
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <span className="text-sm text-foreground/80">Hb:</span>
-            <span className="text-sm font-medium ml-1.5">
-              {patient.hemoglobin} g/dL
-            </span>
-            {renderValueIndicator(patient.hemoglobin, 'hemoglobin')}
-          </div>
+      <div className="space-y-2 mt-3">
+        <div className="flex items-center">
+          <span className="text-sm text-gray-600 w-10">Hb:</span>
+          <span className="text-sm font-medium">{patient.hemoglobin} g/dL</span>
+          <span className={cn(
+            "ml-2 px-2 py-0.5 text-xs font-medium rounded-md",
+            getHemoglobinLabelColor(patient.hemoglobin)
+          )}>
+            {getHemoglobinLabel(patient.hemoglobin)}
+          </span>
         </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <span className="text-sm text-foreground/80">K+:</span>
-            <span className="text-sm font-medium ml-1.5">
-              {patient.potassium} mmol/L
-            </span>
-            {renderValueIndicator(patient.potassium, 'potassium')}
-          </div>
+        <div className="flex items-center">
+          <span className="text-sm text-gray-600 w-10">K+:</span>
+          <span className="text-sm font-medium">{patient.potassium} mmol/L</span>
+          <span className={cn(
+            "ml-2 px-2 py-0.5 text-xs font-medium rounded-md",
+            getPotassiumLabelColor(patient.potassium)
+          )}>
+            {getPotassiumLabel(patient.potassium)}
+          </span>
         </div>
       </div>
 
       {patient.factors.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1">
-          {patient.factors.map((factor) => (
-            <span 
-              key={factor}
-              className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
-            >
-              {getFactorLabel(factor)}
-              {factor === 'severe-mental-illness' && (
-                <span className="ml-1 text-xs text-gray-500">
-                  [SNOMED: {Object.values(severeMentalIllnessSnomedCodes)[0]}]
+          {patient.factors.map((factor) => {
+            if (factor === 'age') {
+              return (
+                <span key={factor} className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
+                  Age &gt;75
                 </span>
-              )}
-            </span>
-          ))}
+              );
+            }
+            if (factor === 'frailty') {
+              return (
+                <span key={factor} className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
+                  Frailty
+                </span>
+              );
+            }
+            if (factor === 'severe-mental-illness') {
+              return (
+                <div key={factor} className="w-full mt-1">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
+                    Severe Mental Illness
+                  </span>
+                  <span className="ml-2 text-xs text-gray-500">
+                    [SNOMED: {Object.values(severeMentalIllnessSnomedCodes)[0]}]
+                  </span>
+                </div>
+              );
+            }
+            return (
+              <span key={factor} className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
+                {getFactorLabel(factor)}
+              </span>
+            );
+          })}
         </div>
       )}
 
       {expanded && (
-        <div className="mt-4 pt-4 border-t border-foreground/10 animate-fade-in">
+        <div className="mt-4 pt-4 border-t border-gray-200 animate-fade-in">
           <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-md">
             <h4 className="text-sm font-medium text-blue-800 mb-1 flex items-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -613,20 +590,20 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
           )}
           
           {patient.priority === 'urgent' && (
-            <div className="mt-4 p-3 bg-urgent/10 border border-urgent/20 rounded-md">
-              <h5 className="text-sm font-medium text-urgent mb-1">Emergency Action Required</h5>
-              <p className="text-xs text-foreground/80">
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <h5 className="text-sm font-medium text-red-700 mb-1">Emergency Action Required</h5>
+              <p className="text-xs text-gray-600">
                 Patient needs immediate medical attention. Send an emergency alert to direct the patient to A&E.
               </p>
               {alertSent && (
-                <div className="mt-2 text-xs border-t border-urgent/20 pt-2">
+                <div className="mt-2 text-xs border-t border-red-200 pt-2">
                   <div className="font-medium">Message sent:</div>
                   <p className="italic mt-1">
                     "Your blood test has come back. Your blood result is low. You need to go to A&E immediately. 
                     Please respond YES to confirm you have received and understood."
                   </p>
                   {patientResponded && (
-                    <div className="mt-1 text-success font-medium">Patient responded: YES</div>
+                    <div className="mt-1 text-green-700 font-medium">Patient responded: YES</div>
                   )}
                 </div>
               )}
@@ -634,21 +611,21 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
           )}
           
           {patient.priority === 'amber' && (
-            <div className="mt-4 p-3 bg-amber/10 border border-amber/20 rounded-md">
-              <h5 className="text-sm font-medium text-amber mb-1">Follow-up Required</h5>
-              <p className="text-xs text-foreground/80">
+            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
+              <h5 className="text-sm font-medium text-amber-700 mb-1">Follow-up Required</h5>
+              <p className="text-xs text-gray-600">
                 Based on trend analysis, patient's blood markers are expected to reach critical levels in 4-6 weeks.
                 Schedule a follow-up test.
               </p>
               {appointmentBooked && (
-                <div className="mt-2 text-xs border-t border-amber/20 pt-2">
+                <div className="mt-2 text-xs border-t border-amber-200 pt-2">
                   <div className="font-medium">Message sent:</div>
                   <p className="italic mt-1">
                     "Based on your recent blood test results, we recommend scheduling your next test. 
                     Text YES if you can make your next blood test on 15th April 2025."
                   </p>
                   {patientResponded && (
-                    <div className="mt-1 text-success font-medium">Patient confirmed appointment</div>
+                    <div className="mt-1 text-green-700 font-medium">Patient confirmed appointment</div>
                   )}
                 </div>
               )}
@@ -656,13 +633,13 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient, className }) => {
           )}
           
           {patient.priority === 'success' && (
-            <div className="mt-4 p-3 bg-success/10 border border-success/20 rounded-md">
-              <h5 className="text-sm font-medium text-success mb-1">Results Normal</h5>
-              <p className="text-xs text-foreground/80">
+            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
+              <h5 className="text-sm font-medium text-green-700 mb-1">Results Normal</h5>
+              <p className="text-xs text-gray-600">
                 All blood test results are within normal ranges. No immediate action required.
               </p>
               {confirmed && (
-                <div className="mt-2 text-xs border-t border-success/20 pt-2 text-success">
+                <div className="mt-2 text-xs border-t border-green-200 pt-2 text-green-700">
                   <div className="font-medium">Results confirmed as read</div>
                 </div>
               )}
