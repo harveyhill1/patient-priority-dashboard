@@ -69,7 +69,7 @@ const PriorityColumn: React.FC<PriorityColumnProps> = ({
     >
       <div className="px-6 py-4 flex items-center justify-between">
         <h2 className={cn("text-xl font-semibold", getTitleColor())}>
-          {priority === 'urgent' ? 'Urgent' : priority === 'amber' ? 'Amber' : 'Green'}
+          {priority === 'urgent' ? 'Urgent' : priority === 'amber' ? 'Abnormal' : 'Green'}
         </h2>
         <div className={cn(
           "px-2.5 py-1 rounded-full text-xs font-medium",

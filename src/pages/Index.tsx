@@ -4,7 +4,6 @@ import PriorityColumn from '@/components/PriorityColumn';
 import { PatientData, PriorityLevel, FactorTag } from '@/lib/types';
 import { Filter, SlidersHorizontal } from 'lucide-react';
 
-// Random names for more realistic data
 const MOCK_PATIENT_DATA: PatientData[] = [
   // Urgent patients
   { 
@@ -170,10 +169,8 @@ const Index = () => {
   const [bloodTestFilter, setBloodTestFilter] = useState<'all' | 'hemoglobin' | 'potassium'>('all');
 
   useEffect(() => {
-    // Simulate loading data
     const loadData = async () => {
       setLoading(true);
-      // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
       setPatients(MOCK_PATIENT_DATA);
       setLoading(false);
@@ -182,29 +179,23 @@ const Index = () => {
     loadData();
   }, []);
   
-  // Filter patients by selected priority and blood test type
   const filteredPatients = patients.filter(patient => {
-    // Filter by priority
     if (!priorityFilters.includes(patient.priority)) {
       return false;
     }
     
-    // Filter by blood test type
     if (bloodTestFilter === 'hemoglobin') {
-      // Hemoglobin filter logic
       if (patient.priority === 'urgent' && patient.hemoglobin >= 8) return false;
       if (patient.priority === 'amber' && (patient.hemoglobin < 8 || patient.hemoglobin >= 11)) return false;
       if (patient.priority === 'success' && patient.hemoglobin < 11) return false;
       return true;
     } else if (bloodTestFilter === 'potassium') {
-      // Potassium filter logic
       if (patient.priority === 'urgent' && patient.potassium <= 6.0) return false;
       if (patient.priority === 'amber' && (patient.potassium <= 5.0 || patient.potassium > 6.0)) return false;
       if (patient.priority === 'success' && patient.potassium > 5.0) return false;
       return true;
     }
     
-    // If no specific blood test filter is applied, show all
     return true;
   });
   
@@ -215,10 +206,8 @@ const Index = () => {
   const togglePriorityFilter = (priority: PriorityLevel) => {
     setPriorityFilters(prev => {
       if (prev.includes(priority)) {
-        // Remove priority if already included
         return prev.filter(p => p !== priority);
       } else {
-        // Add priority if not included
         return [...prev, priority];
       }
     });
@@ -238,9 +227,7 @@ const Index = () => {
           </div>
         ) : (
           <>
-            {/* Filters section */}
             <div className="mb-6 flex flex-col md:flex-row gap-4 justify-center items-start md:items-center animate-fade-in">
-              {/* Priority filters */}
               <div className="flex items-center gap-3 bg-white p-3 rounded-full shadow-md">
                 <div className="flex items-center gap-1 mx-2">
                   <Filter className="h-4 w-4 text-gray-500" />
@@ -281,7 +268,6 @@ const Index = () => {
                 </button>
               </div>
               
-              {/* Blood test type filter */}
               <div className="flex items-center gap-3 bg-white p-3 rounded-full shadow-md">
                 <div className="flex items-center gap-1 mx-2">
                   <SlidersHorizontal className="h-4 w-4 text-gray-500" />
@@ -323,7 +309,6 @@ const Index = () => {
               </div>
             </div>
             
-            {/* Patient columns */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {priorityFilters.includes('urgent') && (
                 <PriorityColumn 

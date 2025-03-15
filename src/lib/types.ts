@@ -44,7 +44,7 @@ export const getLabelByPriority = (priority: PriorityLevel): string => {
     case 'urgent':
       return 'Urgent';
     case 'amber':
-      return 'Amber';
+      return 'Abnormal';
     case 'success':
       return 'Green';
     default:
