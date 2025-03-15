@@ -217,9 +217,9 @@ const Index = () => {
   // Calculate column width based on number of visible columns
   const getColumnClass = () => {
     const count = priorityFilters.length;
-    if (count === 1) return "col-span-1";
-    if (count === 2) return "col-span-1";
-    return "col-span-1";
+    if (count === 1) return "col-span-3"; // One column takes full width
+    if (count === 2) return "col-span-3 md:col-span-3/2"; // Two columns each take half width
+    return "col-span-1"; // Three columns each take one-third width
   };
 
   return (
@@ -323,21 +323,27 @@ const Index = () => {
                 <PriorityColumn 
                   priority="urgent" 
                   patients={urgentPatients} 
-                  className={getColumnClass()}
+                  className={priorityFilters.length === 1 ? "col-span-3" : 
+                             priorityFilters.length === 2 ? "col-span-3 md:col-span-1.5" : 
+                             "col-span-1"}
                 />
               )}
               {priorityFilters.includes('amber') && (
                 <PriorityColumn 
                   priority="amber" 
                   patients={amberPatients} 
-                  className={getColumnClass()}
+                  className={priorityFilters.length === 1 ? "col-span-3" : 
+                             priorityFilters.length === 2 ? "col-span-3 md:col-span-1.5" : 
+                             "col-span-1"}
                 />
               )}
               {priorityFilters.includes('success') && (
                 <PriorityColumn 
                   priority="success" 
                   patients={successPatients} 
-                  className={getColumnClass()}
+                  className={priorityFilters.length === 1 ? "col-span-3" : 
+                             priorityFilters.length === 2 ? "col-span-3 md:col-span-1.5" : 
+                             "col-span-1"}
                 />
               )}
               
