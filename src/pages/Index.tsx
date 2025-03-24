@@ -1,208 +1,49 @@
+
 import React, { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import PriorityColumn from '@/components/PriorityColumn';
-import { PatientData, PriorityLevel } from '@/lib/types';
-import { Filter, SlidersHorizontal } from 'lucide-react';
-import { fetchAllVistaPatientData } from '@/services/vistaEhrService';
+import { PatientData, PriorityLevel, DataSource } from '@/lib/types';
+import { Filter, SlidersHorizontal, Database } from 'lucide-react';
+import { fetchPatientData, getDataSourceDisplayName } from '@/services/patientDataService';
+import { isAuthenticatedWithEpic, initiateEpicAuthorization, logoutFromEpic } from '@/services/epicFhirService';
 import { toast } from 'sonner';
-
-const MOCK_PATIENT_DATA: PatientData[] = [
-  // Urgent patients
-  { 
-    id: "1", 
-    name: "Sarah Johnson", 
-    patientId: "PTN-73621",
-    dateOfBirth: "12/05/1948", 
-    hemoglobin: 5.9, 
-    potassium: 6.2, 
-    priority: "urgent",
-    factors: ["age", "frailty"] 
-  },
-  { 
-    id: "2", 
-    name: "Michael Chen", 
-    patientId: "PTN-45982",
-    dateOfBirth: "23/11/1985", 
-    hemoglobin: 7.1, 
-    potassium: 6.0, 
-    priority: "urgent",
-    factors: ["severe-mental-illness"] 
-  },
-  { 
-    id: "3", 
-    name: "Emma Davis", 
-    patientId: "PTN-29374",
-    dateOfBirth: "04/08/1992", 
-    hemoglobin: 6.8, 
-    potassium: 6.3, 
-    priority: "urgent",
-    factors: ["learning-disability"] 
-  },
-  { 
-    id: "4", 
-    name: "Robert Williams", 
-    patientId: "PTN-61845",
-    dateOfBirth: "15/03/1975", 
-    hemoglobin: 5.5, 
-    potassium: 6.1, 
-    priority: "urgent",
-    factors: [] 
-  },
-  { 
-    id: "5", 
-    name: "Margaret Taylor", 
-    patientId: "PTN-38246",
-    dateOfBirth: "30/01/1942", 
-    hemoglobin: 4.9, 
-    potassium: 6.5, 
-    priority: "urgent",
-    factors: ["age", "care-home"] 
-  },
-  
-  // Amber patients
-  { 
-    id: "6", 
-    name: "David Brown", 
-    patientId: "PTN-58291",
-    dateOfBirth: "19/07/1964", 
-    hemoglobin: 9.5, 
-    potassium: 5.4, 
-    priority: "amber",
-    factors: [] 
-  },
-  { 
-    id: "7", 
-    name: "Jennifer Lee", 
-    patientId: "PTN-13579",
-    dateOfBirth: "02/12/1980", 
-    hemoglobin: 10.2, 
-    potassium: 5.1, 
-    priority: "amber",
-    factors: ["severe-mental-illness"] 
-  },
-  { 
-    id: "8", 
-    name: "Thomas Wilson", 
-    patientId: "PTN-24680",
-    dateOfBirth: "27/09/1990", 
-    hemoglobin: 8.9, 
-    potassium: 5.5, 
-    priority: "amber",
-    factors: ["learning-disability"] 
-  },
-  { 
-    id: "9", 
-    name: "Elizabeth Martinez", 
-    patientId: "PTN-97531",
-    dateOfBirth: "08/06/1971", 
-    hemoglobin: 10.6, 
-    potassium: 5.3, 
-    priority: "amber",
-    factors: [] 
-  },
-  { 
-    id: "10", 
-    name: "Richard Thompson", 
-    patientId: "PTN-86420",
-    dateOfBirth: "14/04/1939", 
-    hemoglobin: 9.9, 
-    potassium: 5.6, 
-    priority: "amber",
-    factors: ["age", "frailty"] 
-  },
-  
-  // Green patients
-  { 
-    id: "11", 
-    name: "Susan Moore", 
-    patientId: "PTN-75319",
-    dateOfBirth: "21/10/1988", 
-    hemoglobin: 13.5, 
-    potassium: 4.2, 
-    priority: "success",
-    factors: [] 
-  },
-  { 
-    id: "12", 
-    name: "James Anderson", 
-    patientId: "PTN-42687",
-    dateOfBirth: "17/02/1976", 
-    hemoglobin: 14.1, 
-    potassium: 4.0, 
-    priority: "success",
-    factors: [] 
-  },
-  { 
-    id: "13", 
-    name: "Patricia Garcia", 
-    patientId: "PTN-91374",
-    dateOfBirth: "05/05/1982", 
-    hemoglobin: 12.6, 
-    potassium: 3.9, 
-    priority: "success",
-    factors: [] 
-  },
-  { 
-    id: "14", 
-    name: "John Smith", 
-    patientId: "PTN-57138",
-    dateOfBirth: "29/08/1945", 
-    hemoglobin: 13.2, 
-    potassium: 4.4, 
-    priority: "success",
-    factors: ["age", "care-home"] 
-  },
-  { 
-    id: "15", 
-    name: "Mary Johnson", 
-    patientId: "PTN-28465",
-    dateOfBirth: "11/11/1994", 
-    hemoglobin: 15.0, 
-    potassium: 4.1, 
-    priority: "success",
-    factors: ["learning-disability"] 
-  },
-];
 
 const Index = () => {
   const [patients, setPatients] = useState<PatientData[]>([]);
   const [loading, setLoading] = useState(true);
   const [priorityFilters, setPriorityFilters] = useState<PriorityLevel[]>(['urgent', 'amber', 'success']);
   const [bloodTestFilter, setBloodTestFilter] = useState<'all' | 'hemoglobin' | 'potassium'>('all');
-  const [useVistaApi, setUseVistaApi] = useState(true);
+  const [dataSource, setDataSource] = useState<DataSource>('vista');
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       
       try {
-        if (useVistaApi) {
-          const vistaPatients = await fetchAllVistaPatientData(15);
+        const { patients: fetchedPatients, actualSource } = await fetchPatientData(dataSource);
+        
+        if (fetchedPatients.length > 0) {
+          setPatients(fetchedPatients);
           
-          if (vistaPatients.length > 0) {
-            setPatients(vistaPatients);
-            toast.success("Successfully loaded data from VISTA EHR");
-          } else {
-            setPatients(MOCK_PATIENT_DATA);
-            toast.warning("Couldn't connect to VISTA EHR, using mock data");
-            setUseVistaApi(false);
+          if (actualSource === dataSource) {
+            toast.success(`Successfully loaded data from ${getDataSourceDisplayName(dataSource)}`);
           }
-        } else {
-          await new Promise(resolve => setTimeout(resolve, 500));
-          setPatients(MOCK_PATIENT_DATA);
+          
+          // Update the data source if it was changed (e.g., fallback to mock)
+          if (actualSource !== dataSource) {
+            setDataSource(actualSource);
+          }
         }
       } catch (error) {
         console.error("Error loading patient data:", error);
-        toast.error("Failed to load data from VISTA EHR, using mock data");
-        setPatients(MOCK_PATIENT_DATA);
-        setUseVistaApi(false);
+        toast.error(`Failed to load data from ${getDataSourceDisplayName(dataSource)}`);
       } finally {
         setLoading(false);
       }
     };
     
     loadData();
-  }, [useVistaApi]);
+  }, [dataSource]);
   
   const filteredPatients = patients.filter(patient => {
     if (!priorityFilters.includes(patient.priority)) {
@@ -261,6 +102,26 @@ const Index = () => {
     return "col-span-1";
   };
 
+  const handleDataSourceChange = (source: DataSource) => {
+    if (source === dataSource) return;
+    
+    // If switching to Epic, check authentication
+    if (source === 'epic' && !isAuthenticatedWithEpic()) {
+      // Epic requires OAuth, so initiate the flow
+      initiateEpicAuthorization();
+      return;
+    }
+    
+    setDataSource(source);
+  };
+
+  const handleEpicLogout = () => {
+    if (dataSource === 'epic') {
+      setDataSource('mock');
+    }
+    logoutFromEpic();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-r from-red-400 via-fuchsia-500 to-purple-500 flex flex-col">
       <Header />
@@ -270,7 +131,7 @@ const Index = () => {
           <div className="h-[60vh] flex items-center justify-center">
             <div className="text-center space-y-4">
               <div className="w-12 h-12 rounded-full border-4 border-white/30 border-t-white animate-spin mx-auto"></div>
-              <p className="text-white">Loading patient data from {useVistaApi ? "VISTA EHR" : "mock data"}...</p>
+              <p className="text-white">Loading patient data from {getDataSourceDisplayName(dataSource)}...</p>
             </div>
           </div>
         ) : (
@@ -356,16 +217,54 @@ const Index = () => {
                 </button>
               </div>
               
-              <button
-                onClick={() => setUseVistaApi(prev => !prev)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  useVistaApi 
-                    ? 'bg-indigo-100 text-indigo-700 border border-indigo-300' 
-                    : 'bg-gray-100 text-gray-500 border border-gray-300'
-                }`}
-              >
-                {useVistaApi ? 'Using VISTA EHR' : 'Using Mock Data'}
-              </button>
+              <div className="flex flex-wrap items-center gap-3 bg-white p-3 rounded-full shadow-md">
+                <div className="flex items-center gap-1 mx-2">
+                  <Database className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm font-medium">Data Source:</span>
+                </div>
+                
+                <button 
+                  onClick={() => handleDataSourceChange('vista')}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    dataSource === 'vista' 
+                      ? 'bg-indigo-100 text-indigo-700' 
+                      : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  VISTA EHR
+                </button>
+                
+                <button 
+                  onClick={() => handleDataSourceChange('epic')}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    dataSource === 'epic' 
+                      ? 'bg-purple-100 text-purple-700' 
+                      : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  Epic EHR
+                </button>
+                
+                <button 
+                  onClick={() => handleDataSourceChange('mock')}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    dataSource === 'mock' 
+                      ? 'bg-teal-100 text-teal-700' 
+                      : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  Mock Data
+                </button>
+                
+                {isAuthenticatedWithEpic() && (
+                  <button 
+                    onClick={handleEpicLogout}
+                    className="px-4 py-1.5 rounded-full text-sm font-medium bg-red-50 text-red-600"
+                  >
+                    Logout from Epic
+                  </button>
+                )}
+              </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -403,7 +302,7 @@ const Index = () => {
       
       <footer className="py-4 text-center text-sm text-white/70">
         <div className="container">
-          SmartLabs VISTA Integration &copy; {new Date().getFullYear()}
+          SmartLabs EHR Integration &copy; {new Date().getFullYear()}
         </div>
       </footer>
     </div>
