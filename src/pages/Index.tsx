@@ -1,9 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import PriorityColumn from '@/components/PriorityColumn';
-import { PatientData, PriorityLevel, FactorTag } from '@/lib/types';
+import { PatientData, PriorityLevel } from '@/lib/types';
 import { Filter, SlidersHorizontal } from 'lucide-react';
+import { fetchAllVistaPatientData } from '@/services/vistaEhrService';
+import { toast } from 'sonner';
 
 const MOCK_PATIENT_DATA: PatientData[] = [
   // Urgent patients
@@ -168,17 +169,40 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [priorityFilters, setPriorityFilters] = useState<PriorityLevel[]>(['urgent', 'amber', 'success']);
   const [bloodTestFilter, setBloodTestFilter] = useState<'all' | 'hemoglobin' | 'potassium'>('all');
+  const [useVistaApi, setUseVistaApi] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setPatients(MOCK_PATIENT_DATA);
-      setLoading(false);
+      
+      try {
+        if (useVistaApi) {
+          const vistaPatients = await fetchAllVistaPatientData(15);
+          
+          if (vistaPatients.length > 0) {
+            setPatients(vistaPatients);
+            toast.success("Successfully loaded data from VISTA EHR");
+          } else {
+            setPatients(MOCK_PATIENT_DATA);
+            toast.warning("Couldn't connect to VISTA EHR, using mock data");
+            setUseVistaApi(false);
+          }
+        } else {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          setPatients(MOCK_PATIENT_DATA);
+        }
+      } catch (error) {
+        console.error("Error loading patient data:", error);
+        toast.error("Failed to load data from VISTA EHR, using mock data");
+        setPatients(MOCK_PATIENT_DATA);
+        setUseVistaApi(false);
+      } finally {
+        setLoading(false);
+      }
     };
     
     loadData();
-  }, []);
+  }, [useVistaApi]);
   
   const filteredPatients = patients.filter(patient => {
     if (!priorityFilters.includes(patient.priority)) {
@@ -214,42 +238,26 @@ const Index = () => {
     });
   };
 
-  // Calculate column width based on number of visible columns
-  const getColumnWidth = (total: number) => {
-    if (total === 1) return "col-span-3"; // One column takes full width
-    if (total === 2) return "col-span-3 md:col-span-[1.5]"; // Two columns each take half width
-    return "col-span-1"; // Three columns each take one-third width
-  };
-
-  // Calculate specific column widths for urgent priority
   const getUrgentColumnWidth = () => {
-    // If urgent is the only column shown, make it take up the full width
     if (priorityFilters.length === 1 && priorityFilters.includes('urgent')) {
       return "col-span-3"; 
     } 
-    // If two columns are shown and one is urgent, give it appropriate width
     else if (priorityFilters.length === 2 && priorityFilters.includes('urgent')) {
       return "col-span-3 md:col-span-[1.5]";
     }
-    // Default case with all three columns
     return "col-span-1";
   };
 
-  // Calculate column widths for non-urgent priorities
   const getNonUrgentColumnWidth = () => {
-    // If urgent is not shown but this column is one of two, give it half width
     if (!priorityFilters.includes('urgent') && priorityFilters.length === 2) {
       return "col-span-3 md:col-span-[1.5]";
     }
-    // If urgent is shown and it's one of two columns, give appropriate width
     else if (priorityFilters.includes('urgent') && priorityFilters.length === 2) {
       return "col-span-3 md:col-span-[1.5]";
     }
-    // If only one column is shown and it's not urgent
-    else if (priorityFilters.length === 1) {
+    if (priorityFilters.length === 1) {
       return "col-span-3";
     }
-    // Default case with all three columns
     return "col-span-1";
   };
 
@@ -262,13 +270,13 @@ const Index = () => {
           <div className="h-[60vh] flex items-center justify-center">
             <div className="text-center space-y-4">
               <div className="w-12 h-12 rounded-full border-4 border-white/30 border-t-white animate-spin mx-auto"></div>
-              <p className="text-white">Loading patient data...</p>
+              <p className="text-white">Loading patient data from {useVistaApi ? "VISTA EHR" : "mock data"}...</p>
             </div>
           </div>
         ) : (
           <>
             <div className="mb-6 flex flex-col md:flex-row gap-4 justify-center items-start md:items-center animate-fade-in">
-              <div className="flex items-center gap-3 bg-white p-3 rounded-full shadow-md">
+              <div className="flex flex-wrap items-center gap-3 bg-white p-3 rounded-full shadow-md">
                 <div className="flex items-center gap-1 mx-2">
                   <Filter className="h-4 w-4 text-gray-500" />
                   <span className="text-sm font-medium">Priority:</span>
@@ -308,7 +316,7 @@ const Index = () => {
                 </button>
               </div>
               
-              <div className="flex items-center gap-3 bg-white p-3 rounded-full shadow-md">
+              <div className="flex flex-wrap items-center gap-3 bg-white p-3 rounded-full shadow-md">
                 <div className="flex items-center gap-1 mx-2">
                   <SlidersHorizontal className="h-4 w-4 text-gray-500" />
                   <span className="text-sm font-medium">Test Type:</span>
@@ -347,6 +355,17 @@ const Index = () => {
                   Potassium (K+)
                 </button>
               </div>
+              
+              <button
+                onClick={() => setUseVistaApi(prev => !prev)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  useVistaApi 
+                    ? 'bg-indigo-100 text-indigo-700 border border-indigo-300' 
+                    : 'bg-gray-100 text-gray-500 border border-gray-300'
+                }`}
+              >
+                {useVistaApi ? 'Using VISTA EHR' : 'Using Mock Data'}
+              </button>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -384,7 +403,7 @@ const Index = () => {
       
       <footer className="py-4 text-center text-sm text-white/70">
         <div className="container">
-          SmartLabs &copy; {new Date().getFullYear()}
+          SmartLabs VISTA Integration &copy; {new Date().getFullYear()}
         </div>
       </footer>
     </div>

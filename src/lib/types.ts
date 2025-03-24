@@ -72,3 +72,14 @@ export const getFactorLabel = (factor: FactorTag): string => {
 export const getSnomedCodeForMentalIllness = (condition: keyof typeof severeMentalIllnessSnomedCodes): string => {
   return severeMentalIllnessSnomedCodes[condition] || '';
 };
+
+// Additional FHIR related types
+export interface FhirPatientReference {
+  reference: string;
+  display?: string;
+}
+
+export interface FhirResource {
+  resourceType: string;
+  id: string;
+}
